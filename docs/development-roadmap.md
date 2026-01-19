@@ -4,202 +4,256 @@
 
 This document outlines the complete development roadmap for The Replicant MVP, from initial setup to deployment and iteration.
 
+> **Current Focus**: Step 3 - Generate Architecture Diagram  
+> **Working Branch**: `feature/002-user-stories` (pending merge to `dev`)
+
+---
+
 ## Development Steps
 
-### 1. Create Branches
-**Status**: ⏳ Pending
+### 1. Create Branches ✅
+**Status**: ✅ Completed  
+**Completed**: 2026-01-18  
 **Description**: Set up the branching structure according to our branching strategy
-**Tasks**:
-- [ ] Create `dev` branch from `main`
-- [ ] Create `qa` branch from `main`
-- [ ] Create `feature/001-user-stories-documentation` branch from `dev`
-- [ ] Verify branch structure follows `docs/branching-strategy.md`
 
-### 2. Generate User Stories
-**Status**: ⏳ Pending
+**Tasks**:
+- [x] Create `dev` branch from `main`
+- [x] Create `qa` branch from `main`
+- [x] Verify branch structure follows `docs/branching-strategy.md`
+- [x] Update README.md with MVP scope and standards
+
+---
+
+### 2. Generate User Stories ✅
+**Status**: ✅ Completed  
+**Completed**: 2026-01-18  
+**Branch**: `feature/002-user-stories`  
 **Description**: Document all MVP user stories with acceptance criteria
-**Tasks**:
-- [ ] Create `docs/user-stories/` directory structure
-- [ ] Document Epic 001: Authentication (US-001, US-002)
-- [ ] Document Epic 002: Blog Management (US-003, US-004, US-005)
-- [ ] Document Epic 003: Reading Experience (US-006, US-007)
-- [ ] Document Epic 004: Organization (US-008, US-009, US-010)
-- [ ] Document Epic 005: Administration (US-011, US-012)
-- [ ] Create MVP backlog with priorities
-- [ ] Review and validate all user stories
 
-### 3. Generate Architecture Diagram
-**Status**: ⏳ Pending
+**Tasks**:
+- [x] Create `docs/user-stories/` directory structure
+- [x] Document Epic 001: Authentication (US-001, US-002a, US-002 to US-005)
+- [x] Document Epic 002: Blog Management (US-006 to US-009)
+- [x] Document Epic 003: Reading Experience (US-010 to US-012)
+- [x] Document Epic 004: Organization (US-013 to US-015)
+- [x] Create MVP backlog with priorities (16 stories, 67 story points)
+- [x] Review and validate all user stories
+- [ ] Merge to `dev` after review
+
+**Deliverables**:
+- 16 user stories across 4 epics
+- Backlog with sprint allocation
+- Security-focused acceptance criteria
+
+---
+
+### 3. Generate Architecture Diagram ⏳
+**Status**: ⏳ Pending  
+**Branch**: `feature/003-architecture` (create from `dev`)  
 **Description**: Create comprehensive architecture documentation
-**Tasks**:
-- [ ] Design system architecture diagram
-- [ ] Create database schema diagram
-- [ ] Document API architecture
-- [ ] Design security architecture
-- [ ] Create deployment architecture diagram
-- [ ] Document technology stack relationships
-- [ ] Add scalability considerations
 
-### 4. Create API Contract
-**Status**: ⏳ Pending
+**Tasks**:
+- [ ] Design system architecture diagram (Mermaid/PlantUML)
+- [ ] Create database schema diagram (ERD)
+- [ ] Document API architecture
+- [ ] Design security architecture (JWT flow)
+- [ ] Create deployment architecture diagram
+- [ ] Document technology decisions (ADR format)
+
+---
+
+### 4. Create API Contract ⏳
+**Status**: ⏳ Pending  
+**Branch**: `feature/004-api-contract` (create from `dev`)  
 **Description**: Define complete API specification using OpenAPI 3.0
+
 **Tasks**:
 - [ ] Create `backend/api-spec.yaml` OpenAPI specification
 - [ ] Define authentication endpoints (`/api/v1/auth/*`)
 - [ ] Define blog posts endpoints (`/api/v1/posts/*`)
 - [ ] Define categories and tags endpoints
-- [ ] Define search endpoints
 - [ ] Add request/response schemas
-- [ ] Document error responses
+- [ ] Document error responses (RFC 7807)
 - [ ] Add API security definitions
-- [ ] Validate specification with Swagger UI
-
-### 5. Setup
-**Status**: ⏳ Pending
-**Description**: Initialize project structure and development environment
-**Tasks**:
-- [ ] Create Spring Boot backend project structure
-- [ ] Create Next.js frontend project structure
-- [ ] Configure Maven/Gradle build files
-- [ ] Setup package.json and dependencies
-- [ ] Create Docker Compose configuration
-- [ ] Configure PostgreSQL connection
-- [ ] Configure Redis connection
-- [ ] Setup environment variables
-- [ ] Create basic project documentation
-
-### 6. Basic Auth
-**Status**: ⏳ Pending
-**Description**: Implement JWT-based authentication system
-**Tasks**:
-- [ ] Setup Spring Security configuration
-- [ ] Create JWT token generation/validation
-- [ ] Implement user registration endpoint
-- [ ] Implement user login endpoint
-- [ ] Create user entity and repository
-- [ ] Add password encryption (BCrypt)
-- [ ] Implement JWT refresh token logic
-- [ ] Add authentication filters
-- [ ] Create user DTOs and validators
-- [ ] Write unit tests for authentication
-
-### 7. CRUD Posts
-**Status**: ⏳ Pending
-**Description**: Implement complete blog post management system
-**Tasks**:
-- [ ] Create Post entity with JPA annotations
-- [ ] Create PostRepository interface
-- [ ] Implement PostService with CRUD operations
-- [ ] Create PostController with REST endpoints
-- [ ] Add input validation and sanitization
-- [ ] Implement markdown processing
-- [ ] Add post categorization logic
-- [ ] Implement tagging system
-- [ ] Create Post DTOs and mappers
-- [ ] Write integration tests for CRUD operations
-
-### 8. Basic Frontend
-**Status**: ⏳ Pending
-**Description**: Implement core frontend functionality
-**Tasks**:
-- [ ] Setup Next.js project structure
-- [ ] Configure TailwindCSS
-- [ ] Create API client from OpenAPI spec
-- [ ] Implement authentication pages (login/register)
-- [ ] Create homepage with post listing
-- [ ] Implement post detail page
-- [ ] Create admin dashboard
-- [ ] Add markdown editor component
-- [ ] Implement responsive design
-- [ ] Add loading states and error handling
-
-### 9. Deploy
-**Status**: ⏳ Pending
-**Description**: Deploy application to production environments
-**Tasks**:
-- [ ] Configure Railway for backend deployment
-- [ ] Configure Vercel for frontend deployment
-- [ ] Setup production database
-- [ ] Configure production Redis
-- [ ] Setup environment variables for production
-- [ ] Implement CI/CD pipeline with GitHub Actions
-- [ ] Configure SSL certificates
-- [ ] Setup domain and DNS
-- [ ] Implement health checks
-- [ ] Test production deployment
-
-### 10. MVP Iteration
-**Status**: ⏳ Pending
-**Description**: Review, refine, and iterate on MVP based on feedback
-**Tasks**:
-- [ ] Conduct user testing sessions
-- [ ] Collect feedback and bug reports
-- [ ] Implement critical bug fixes
-- [ ] Optimize performance
-- [ ] Enhance user experience
-- [ ] Add missing MVP features
-- [ ] Improve security measures
-- [ ] Update documentation
-- [ ] Prepare for v1.1 release
-- [ ] Plan next development cycle
-
-## Dependencies
-
-### Sequential Dependencies
-```
-1. Create Branches → 2. User Stories → 3. Architecture Diagram → 4. API Contract
-5. Setup → 6. Basic Auth → 7. CRUD Posts → 8. Basic Frontend → 9. Deploy → 10. MVP Iteration
-```
-
-### Parallel Opportunities
-- **Frontend Development**: Can start after step 4 (API Contract)
-- **Testing**: Can begin after step 6 (Basic Auth)
-- **Documentation**: Continuous throughout all steps
-
-## Success Criteria
-
-### Step Completion Indicators
-- **Step 1**: All branches created and verified
-- **Step 2**: All user stories documented and reviewed
-- **Step 3**: Architecture diagrams complete and approved
-- **Step 4**: API contract validated with Swagger UI
-- **Step 5**: Development environment fully functional
-- **Step 6**: Authentication system working end-to-end
-- **Step 7**: Blog CRUD operations fully functional
-- **Step 8**: Frontend MVP deployed and accessible
-- **Step 9**: Production deployment successful
-- **Step 10**: MVP stable and ready for v1.1
-
-## Risk Mitigation
-
-### High-Risk Areas
-- **Authentication**: Security vulnerabilities
-- **Database**: Data loss or corruption
-- **Deployment**: Downtime or configuration issues
-- **Performance**: Slow loading times
-
-### Mitigation Strategies
-- **Security**: Regular security audits and testing
-- **Data**: Automated backups and recovery procedures
-- **Deployment**: Staging environment testing
-- **Performance**: Load testing and optimization
-
-## Timeline Estimation
-
-### Sprint Planning
-- **Sprint 0**: Steps 1-4 (Planning & Design)
-- **Sprint 1**: Steps 5-6 (Setup & Auth)
-- **Sprint 2**: Steps 7-8 (Backend & Frontend)
-- **Sprint 3**: Steps 9-10 (Deploy & Iterate)
-
-### Estimated Duration
-- **Total Timeline**: 4 weeks
-- **Buffer Time**: 20% for unexpected issues
-- **Review Points**: End of each sprint
+- [ ] Validate specification with Swagger Editor
 
 ---
 
-**Document Version**: 1.0  
+### 5. Project Setup ⏳
+**Status**: ⏳ Pending  
+**Branch**: `feature/005-project-setup` (create from `dev`)  
+**Description**: Initialize project structure and development environment
+
+**Tasks**:
+- [ ] Initialize Spring Boot backend (Maven, Java 21)
+- [ ] Initialize Next.js frontend (TypeScript, TailwindCSS)
+- [ ] Create `docker-compose.yml` (PostgreSQL only - no Redis for MVP)
+- [ ] Configure `.env.example` files
+- [ ] Setup Checkstyle + ESLint/Prettier
+- [ ] Create initial GitHub Actions workflow
+- [ ] Verify local development environment works
+
+> **💡 MVP Decision**: No Redis. PostgreSQL handles caching needs for MVP scale.
+
+---
+
+### 6. Basic Auth ⏳
+**Status**: ⏳ Pending  
+**Branch**: `feature/006-authentication` (create from `dev`)  
+**Description**: Implement JWT-based authentication system
+
+**Tasks**:
+- [ ] Setup Spring Security configuration
+- [ ] Create User entity and repository
+- [ ] Implement JWT token generation/validation
+- [ ] Implement `/api/v1/auth/register` endpoint
+- [ ] Implement `/api/v1/auth/login` endpoint
+- [ ] Implement `/api/v1/auth/refresh` endpoint
+- [ ] Add password encryption (BCrypt)
+- [ ] Create user DTOs and validators
+- [ ] Write unit + integration tests (≥80% coverage)
+
+---
+
+### 7. CRUD Posts ⏳
+**Status**: ⏳ Pending  
+**Branch**: `feature/007-blog-crud` (create from `dev`)  
+**Description**: Implement complete blog post management system
+
+**Tasks**:
+- [ ] Create Post, Category, Tag entities with JPA
+- [ ] Create repository interfaces
+- [ ] Implement PostService with CRUD operations
+- [ ] Create PostController with REST endpoints
+- [ ] Add input validation (Jakarta Validation)
+- [ ] Implement slug generation
+- [ ] Add pagination support
+- [ ] Write integration tests for CRUD operations
+
+---
+
+### 8. Basic Frontend ⏳
+**Status**: ⏳ Pending  
+**Branch**: `feature/008-frontend-mvp` (create from `dev`)  
+**Description**: Implement core frontend functionality
+
+**Tasks**:
+- [ ] Generate API client from OpenAPI spec
+- [ ] Implement login page (admin only)
+- [ ] Create homepage with post listing (SSG)
+- [ ] Implement post detail page (SSG + ISR)
+- [ ] Create admin dashboard for CRUD
+- [ ] Add markdown renderer (react-markdown)
+- [ ] Implement responsive design (mobile-first)
+- [ ] Add loading states and error handling
+- [ ] Implement SEO meta tags
+
+---
+
+### 9. Deploy ⏳
+**Status**: ⏳ Pending  
+**Branch**: `feature/009-deployment` (create from `dev`)  
+**Description**: Deploy application to production environments
+
+**Tasks**:
+- [ ] Configure Railway for backend deployment
+- [ ] Configure Vercel for frontend deployment
+- [ ] Setup Supabase PostgreSQL (free tier)
+- [ ] Configure production environment variables
+- [ ] Complete CI/CD pipeline (GitHub Actions)
+- [ ] Configure custom domain (optional)
+- [ ] Implement health check endpoint
+- [ ] Test production deployment
+- [ ] Merge to `qa` → validate → Merge to `main`
+
+---
+
+### 10. MVP Iteration ⏳
+**Status**: ⏳ Pending  
+**Description**: Review, refine, and iterate on MVP based on feedback
+
+**Tasks**:
+- [ ] Self-test complete user flows
+- [ ] Fix critical bugs
+- [ ] Optimize Core Web Vitals
+- [ ] Update documentation
+- [ ] Tag release v1.0.0
+- [ ] Plan v1.1 features
+
+---
+
+## Progress Tracker
+
+| Step | Name | Status | Sprint |
+|------|------|--------|--------|
+| 1 | Create Branches | ✅ Done | 0 |
+| 2 | User Stories | ✅ Done | 0 |
+| 3 | Architecture | 🔄 Next | 0 |
+| 4 | API Contract | ⏳ Pending | 0 |
+| 5 | Project Setup | ⏳ Pending | 1 |
+| 6 | Basic Auth | ⏳ Pending | 1 |
+| 7 | CRUD Posts | ⏳ Pending | 2 |
+| 8 | Basic Frontend | ⏳ Pending | 2 |
+| 9 | Deploy | ⏳ Pending | 3 |
+| 10 | MVP Iteration | ⏳ Pending | 3 |
+
+---
+
+## Git Workflow Reminder
+
+```bash
+# Starting a new step (example: Step 2)
+git checkout dev
+git pull origin dev
+git checkout -b feature/002-user-stories
+
+# After completing work
+git add .
+git commit -m "docs: add user stories for MVP"
+git push origin feature/002-user-stories
+
+# Create PR to dev → Review → Merge
+```
+
+See [branching-strategy.md](branching-strategy.md) for full workflow details.
+
+---
+
+## Sprint Planning
+
+| Sprint | Steps | Focus | Duration |
+|--------|-------|-------|----------|
+| 0 | 1-4 | Planning & Design | Week 1 |
+| 1 | 5-6 | Setup & Auth | Week 2 |
+| 2 | 7-8 | Core Features | Week 3 |
+| 3 | 9-10 | Deploy & Polish | Week 4 |
+
+**Estimated Total**: 4 weeks  
+**Buffer**: +20% for unexpected issues
+
+---
+
+## Next Action
+
+> **🎯 Current**: Commit and merge Step 2 (User Stories), then start Step 3 (Architecture).
+>
+> ```bash
+> # 1. Commit Step 2 changes
+> git add .
+> git commit -m "docs: add MVP user stories and backlog (16 stories, 4 epics)"
+> git push origin feature/002-user-stories
+>
+> # 2. Create PR: feature/002-user-stories → dev
+> # 3. After merge, start Step 3
+> git checkout dev
+> git pull origin dev
+> git checkout -b feature/003-architecture
+> ```
+
+---
+
+**Document Version**: 1.2  
 **Created**: 2026-01-13  
-**Last Updated**: 2026-01-13  
-**Next Review**: After Step 1 completion
+**Last Updated**: 2026-01-18  
+**Next Review**: After Step 3 completion
+**Next Review**: After Step 2 completion
