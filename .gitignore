@@ -25,9 +25,9 @@ dist/
 *.log
 
 # Database
+*.db
 
 # Agent Configuration
 .agent/
 .gemini/
-
 Review The Replicant Project.md
