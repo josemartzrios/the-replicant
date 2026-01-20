@@ -47,18 +47,26 @@ This document outlines the complete development roadmap for The Replicant MVP, f
 
 ---
 
-### 3. Generate Architecture Diagram ⏳
-**Status**: ⏳ Pending  
+### 3. Generate Architecture Diagram ✅
+**Status**: ✅ Completed  
+**Completed**: 2026-01-19  
 **Branch**: `feature/003-architecture` (create from `dev`)  
 **Description**: Create comprehensive architecture documentation
 
 **Tasks**:
-- [ ] Design system architecture diagram (Mermaid/PlantUML)
-- [ ] Create database schema diagram (ERD)
-- [ ] Document API architecture
-- [ ] Design security architecture (JWT flow)
-- [ ] Create deployment architecture diagram
-- [ ] Document technology decisions (ADR format)
+- [x] Design system architecture diagram (Mermaid/PlantUML)
+- [x] Create database schema diagram (ERD)
+- [x] Document API architecture
+- [x] Design security architecture (JWT flow)
+- [x] Create deployment architecture diagram
+- [x] Document technology decisions (ADR format)
+
+**Deliverables**:
+- `docs/architecture/system-architecture.md`
+- `docs/architecture/database-schema.md`
+- `docs/architecture/api-architecture.md`
+- `docs/architecture/security-architecture.md`
+- `docs/architecture/deployment-architecture.md`
 
 ---
 
@@ -181,6 +189,20 @@ This document outlines the complete development roadmap for The Replicant MVP, f
 - [ ] Plan v1.1 features
 
 ---
+
+### 11. Narrative Implementation ⏳
+**Status**: ⏳ Pending  
+**Description**: Integrar el sistema de lore y ARG según el Epic 005.
+
+**Tasks**:
+- [ ] Implement Narrative Phase Manager
+- [ ] Add hidden metadata and comments
+- [ ] Create custom narrative 404
+- [ ] Implement console easter eggs
+- [ ] Deploy Fase 1 seeds
+
+---
+
 
 ## Progress Tracker
 
