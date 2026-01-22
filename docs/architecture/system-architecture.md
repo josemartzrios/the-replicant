@@ -12,44 +12,42 @@ The Replicant follows a modern **API-First** architecture with clear separation 
 
 ## Architecture Diagram
 
-```mermaid
-flowchart TB
-    subgraph "Client_Layer"
-        Browser["🌐 Browser"]
-        Mobile["📱 Mobile App (Future)"]
-    end
-
-    subgraph "Frontend_Vercel"
-        NextJS["⚛️ Next.js 14+<br/>SSR/SSG, TS, Tailwind"]
-    end
-
-    subgraph "Backend_Railway"
-        SpringBoot["☕ Spring Boot 3.x<br/>REST API, Security, JPA"]
-    end
-
-    subgraph "Database_Supabase"
-        PostgreSQL[("🐘 PostgreSQL 15+<br/>Posts, Users, Tags")]
-    end
-
-    subgraph "External_Services"
-        Resend["📧 Resend<br/>Email Service"]
-    end
-
-    Browser --> NextJS
-    Mobile -.-> SpringBoot
-    NextJS --> |"HTTPS/REST"| SpringBoot
-    SpringBoot --> PostgreSQL
-    SpringBoot --> Resend
-
-    classDef frontend fill:#61dafb,color:#000
-    classDef backend fill:#6db33f,color:#fff
-    classDef database fill:#336791,color:#fff
-    classDef external fill:#9ca3af,color:#000
-
-    class NextJS frontend
-    class SpringBoot backend
-    class PostgreSQL database
-    class Resend external
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                              CLIENT LAYER                                    │
+│  ┌─────────────────────┐           ┌─────────────────────┐                  │
+│  │   🌐 Browser        │           │  📱 Mobile App      │                  │
+│  │                     │           │     (Future)        │                  │
+│  └─────────┬───────────┘           └──────────┬──────────┘                  │
+└────────────┼────────────────────────────────┼───────────────────────────────┘
+             │                                  │
+             ▼                                  │ (future)
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           FRONTEND (Vercel)                                  │
+│  ┌─────────────────────────────────────────────────────────────────────┐    │
+│  │                       ⚛️ Next.js 14+                                │    │
+│  │                   SSR/SSG, TypeScript, Tailwind                     │    │
+│  └─────────────────────────────────┬───────────────────────────────────┘    │
+└────────────────────────────────────┼────────────────────────────────────────┘
+                                     │
+                                     │ HTTPS/REST
+                                     ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                          BACKEND (Railway)                                   │
+│  ┌─────────────────────────────────────────────────────────────────────┐    │
+│  │                      ☕ Spring Boot 3.x                             │    │
+│  │                  REST API, Security, JPA                            │    │
+│  └──────────────────────┬─────────────────────┬────────────────────────┘    │
+└─────────────────────────┼─────────────────────┼─────────────────────────────┘
+                          │                     │
+                          ▼                     ▼
+┌────────────────────────────────────┐   ┌────────────────────────────────────┐
+│        DATABASE (Supabase)         │   │        EXTERNAL SERVICES           │
+│  ┌──────────────────────────────┐  │   │  ┌──────────────────────────────┐  │
+│  │     🐘 PostgreSQL 15+        │  │   │  │       📧 Resend              │  │
+│  │     Posts, Users, Tags       │  │   │  │       Email Service          │  │
+│  └──────────────────────────────┘  │   │  └──────────────────────────────┘  │
+└────────────────────────────────────┘   └────────────────────────────────────┘
 ```
 
 ---
@@ -85,29 +83,67 @@ flowchart TB
 
 ## Data Flow
 
-```mermaid
-sequenceDiagram
-    participant U as User
-    participant FE as Next.js
-    participant BE as Spring Boot
-    participant DB as PostgreSQL
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                         PUBLIC READ FLOW (SSG)                                │
+└──────────────────────────────────────────────────────────────────────────────┘
 
-    Note over U,DB: Public Read Flow (SSG)
-    U->>FE: Visit /blog/my-post
-    FE->>BE: GET /api/v1/posts/my-post
-    BE->>DB: SELECT * FROM posts WHERE slug = ?
-    DB-->>BE: Post data
-    BE-->>FE: JSON response
-    FE-->>U: Rendered HTML (cached)
+  User              Next.js            Spring Boot          PostgreSQL
+   │                   │                    │                    │
+   │  Visit            │                    │                    │
+   │  /blog/my-post    │                    │                    │
+   │──────────────────>│                    │                    │
+   │                   │                    │                    │
+   │                   │ GET                │                    │
+   │                   │ /api/v1/posts/     │                    │
+   │                   │ my-post            │                    │
+   │                   │───────────────────>│                    │
+   │                   │                    │                    │
+   │                   │                    │ SELECT * FROM      │
+   │                   │                    │ posts WHERE        │
+   │                   │                    │ slug = ?           │
+   │                   │                    │───────────────────>│
+   │                   │                    │                    │
+   │                   │                    │     Post data      │
+   │                   │                    │<───────────────────│
+   │                   │                    │                    │
+   │                   │   JSON response    │                    │
+   │                   │<───────────────────│                    │
+   │                   │                    │                    │
+   │  Rendered HTML    │                    │                    │
+   │  (cached)         │                    │                    │
+   │<──────────────────│                    │                    │
 
-    Note over U,DB: Admin Write Flow
-    U->>FE: Submit new post
-    FE->>BE: POST /api/v1/posts (+ JWT)
-    BE->>BE: Validate JWT
-    BE->>DB: INSERT INTO posts
-    DB-->>BE: Created post
-    BE-->>FE: 201 Created
-    FE-->>U: Success notification
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                           ADMIN WRITE FLOW                                    │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+  User              Next.js            Spring Boot          PostgreSQL
+   │                   │                    │                    │
+   │  Submit new post  │                    │                    │
+   │──────────────────>│                    │                    │
+   │                   │                    │                    │
+   │                   │ POST               │                    │
+   │                   │ /api/v1/posts      │                    │
+   │                   │ (+ JWT)            │                    │
+   │                   │───────────────────>│                    │
+   │                   │                    │                    │
+   │                   │                    │ Validate JWT       │
+   │                   │                    │ (internal)         │
+   │                   │                    │                    │
+   │                   │                    │ INSERT INTO posts  │
+   │                   │                    │───────────────────>│
+   │                   │                    │                    │
+   │                   │                    │   Created post     │
+   │                   │                    │<───────────────────│
+   │                   │                    │                    │
+   │                   │   201 Created      │                    │
+   │                   │<───────────────────│                    │
+   │                   │                    │                    │
+   │  Success          │                    │                    │
+   │  notification     │                    │                    │
+   │<──────────────────│                    │                    │
 ```
 
 ---

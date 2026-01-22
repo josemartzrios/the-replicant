@@ -6,82 +6,86 @@
 
 ## ER Diagram
 
-```mermaid
-erDiagram
-    USER ||--o{ POST : writes
-    USER ||--o{ PASSWORD_RESET_TOKEN : requests
-    USER ||--o{ REFRESH_TOKEN : has
-    USER ||--o{ USER : creates
-    
-    POST ||--o| CATEGORY : belongs_to
-    POST }o--o{ TAG : has
-    
-    USER {
-        uuid id PK
-        string email "UK, unique"
-        string name
-        string password_hash
-        string role "ADMIN, AUTHOR"
-        boolean must_change_password
-        uuid created_by FK "nullable"
-        timestamp created_at
-        timestamp updated_at
-    }
-    
-    POST {
-        uuid id PK
-        string title
-        string slug "UK, unique"
-        text content "markdown"
-        string excerpt
-        string status "DRAFT, PUBLISHED"
-        uuid author_id FK
-        uuid category_id FK "nullable"
-        int reading_time_minutes
-        string search_vector "tsvector"
-        timestamp published_at "nullable"
-        timestamp created_at
-        timestamp updated_at
-        timestamp deleted_at "soft delete"
-    }
-    
-    CATEGORY {
-        uuid id PK
-        string name UK
-        string slug UK
-        string description
-        timestamp created_at
-    }
-    
-    TAG {
-        uuid id PK
-        string name UK
-        string slug UK
-        timestamp created_at
-    }
-    
-    POST_TAG {
-        uuid post_id PK,FK
-        uuid tag_id PK,FK
-    }
-    
-    REFRESH_TOKEN {
-        uuid id PK
-        string token_hash UK
-        uuid user_id FK
-        timestamp expires_at
-        timestamp created_at
-        timestamp revoked_at "nullable"
-    }
-    
-    PASSWORD_RESET_TOKEN {
-        uuid id PK
-        string token_hash UK
-        uuid user_id FK
-        timestamp expires_at
-        timestamp created_at
-        timestamp used_at "nullable"
-    }
+```
+┌─────────────────────────────────────────────────────────────────────────────────────────┐
+│                              ENTITY RELATIONSHIP DIAGRAM                                │
+└─────────────────────────────────────────────────────────────────────────────────────────┘
+
+    ┌──────────────────────────────┐
+    │            USER              │
+    ├──────────────────────────────┤
+    │ PK  id              UUID     │
+    │ UK  email           VARCHAR  │
+    │     name            VARCHAR  │
+    │     password_hash   VARCHAR  │
+    │     role            ENUM     │◄─────────────────────┐
+    │     must_change_pwd BOOLEAN  │                      │
+    │ FK  created_by      UUID ────┼──────────────────────┘ (self-reference: creates)
+    │     created_at      TIMESTAMP│
+    │     updated_at      TIMESTAMP│
+    └──────────────┬───────────────┘
+                   │
+          writes   │ 1:N
+                   │
+    ┌──────────────▼───────────────┐            ┌──────────────────────────────┐
+    │            POST              │            │          CATEGORY            │
+    ├──────────────────────────────┤            ├──────────────────────────────┤
+    │ PK  id              UUID     │            │ PK  id              UUID     │
+    │     title           VARCHAR  │  N:1       │ UK  name            VARCHAR  │
+    │ UK  slug            VARCHAR  │ belongs_to │ UK  slug            VARCHAR  │
+    │     content         TEXT     │◄──────────►│     description     VARCHAR  │
+    │     excerpt         VARCHAR  │            │     created_at      TIMESTAMP│
+    │     status          ENUM     │            └──────────────────────────────┘
+    │ FK  author_id       UUID     │
+    │ FK  category_id     UUID     │
+    │     reading_time    INT      │            ┌──────────────────────────────┐
+    │     search_vector   TSVECTOR │            │            TAG               │
+    │     published_at    TIMESTAMP│            ├──────────────────────────────┤
+    │     created_at      TIMESTAMP│   N:M      │ PK  id              UUID     │
+    │     updated_at      TIMESTAMP│◄──────────►│ UK  name            VARCHAR  │
+    │     deleted_at      TIMESTAMP│    has     │ UK  slug            VARCHAR  │
+    └──────────────────────────────┘            │     created_at      TIMESTAMP│
+                                                └──────────────────────────────┘
+                                                           ▲
+    ┌──────────────────────────────┐                       │
+    │         POST_TAG             │                       │
+    │      (Junction Table)        │───────────────────────┘
+    ├──────────────────────────────┤
+    │ PK,FK  post_id      UUID     │
+    │ PK,FK  tag_id       UUID     │
+    └──────────────────────────────┘
+
+
+┌─────────────────────────────────────────────────────────────────────────────────────────┐
+│                               SECURITY TOKENS                                           │
+└─────────────────────────────────────────────────────────────────────────────────────────┘
+
+    USER                               USER
+      │                                  │
+      │ 1:N (has)                        │ 1:N (requests)
+      ▼                                  ▼
+┌──────────────────────────────┐   ┌──────────────────────────────┐
+│       REFRESH_TOKEN          │   │   PASSWORD_RESET_TOKEN       │
+├──────────────────────────────┤   ├──────────────────────────────┤
+│ PK  id              UUID     │   │ PK  id              UUID     │
+│ UK  token_hash      VARCHAR  │   │ UK  token_hash      VARCHAR  │
+│ FK  user_id         UUID     │   │ FK  user_id         UUID     │
+│     expires_at      TIMESTAMP│   │     expires_at      TIMESTAMP│
+│     created_at      TIMESTAMP│   │     created_at      TIMESTAMP│
+│     revoked_at      TIMESTAMP│   │     used_at         TIMESTAMP│
+└──────────────────────────────┘   └──────────────────────────────┘
+
+
+┌─────────────────────────────────────────────────────────────────────────────────────────┐
+│                              RELATIONSHIPS SUMMARY                                       │
+├─────────────────────────────────────────────────────────────────────────────────────────┤
+│  USER ────1:N──── POST              (writes)                                            │
+│  USER ────1:N──── PASSWORD_RESET    (requests)                                          │
+│  USER ────1:N──── REFRESH_TOKEN     (has)                                               │
+│  USER ────1:N──── USER              (creates - self-referencing)                        │
+│  POST ────N:1──── CATEGORY          (belongs_to)                                        │
+│  POST ────N:M──── TAG               (has, via POST_TAG junction)                        │
+└─────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
