@@ -1,7 +1,7 @@
 # MVP Backlog
 
-> **Total Stories**: 16  
-> **Estimated Sprints**: 3 (after Sprint 0 planning)
+> **Total Stories**: 25  
+> **Estimated Sprints**: 3 + Phase 4 (Narrative)
 
 ## Priority Matrix
 
@@ -34,6 +34,20 @@
 | US-015 | Manage Categories (Admin) | E004 | 3 | 3 |
 
 **Total P1**: 14 story points
+
+### P2 - Narrative Lore (Post-MVP Enrichment)
+
+| ID | Story | Epic | Phase | Points |
+|----|-------|------|-------|--------|
+| US-L01 | Narrative Phase Manager (Core) | E005 | 5 | 5 |
+| US-L02 | HTML Comments & Metadata | E005 | 5 | 2 |
+| US-L03 | Console Easter Eggs | E005 | 5 | 2 |
+| US-L04 | Hidden Routes & Custom 404 | E005 | 5 | 3 |
+| US-L05 | Engagement Trackers | E005 | 5 | 3 |
+| US-L06 | Custom 404 Page (Narrative) | E005 | 5 | 2 |
+| US-L09 | Narrative Phase Manager Admin | E005 | 5 | 3 |
+
+**Total P2**: 20 story points
 
 ---
 
@@ -96,4 +110,4 @@ A story is complete when:
 
 **Backlog Version**: 1.1  
 **Created**: 2026-01-18  
-**Last Updated**: 2026-01-18
+**Last Updated**: 2026-01-19
