@@ -1,0 +1,38 @@
+# Compiled class files
+*.class
+target/
+
+# Log files
+*.log
+
+# IDE files
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+.project
+.classpath
+.settings/
+
+# Package files
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# Maven
+.mvn/timing.properties
+!/.mvn/wrapper/maven-wrapper.jar
+
+# Environment files
+.env
+.env.local
+application-local.yml
+
+# OS files
+.DS_Store
+Thumbs.db

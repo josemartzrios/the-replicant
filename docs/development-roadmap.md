@@ -38,7 +38,7 @@ This document outlines the complete development roadmap for The Replicant MVP, f
 - [x] Document Epic 004: Organization (US-013 to US-015)
 - [x] Create MVP backlog with priorities (16 stories, 67 story points)
 - [x] Review and validate all user stories
-- [ ] Merge to `dev` after review
+- [x] Merge to `dev` after review
 
 **Deliverables**:
 - 16 user stories across 4 epics
