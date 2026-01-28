@@ -83,8 +83,8 @@ services:
 
 | Service | URL | Provider |
 |---------|-----|----------|
-| Frontend | `https://thereplicant.blog` | Vercel |
-| Backend | `https://api.thereplicant.blog` | Railway |
+| Frontend | `https://thereplicant.com` | Vercel |
+| Backend | `https://api.thereplicant.com` | Railway |
 | Database | Supabase connection string | Supabase |
 | Email | API Key | Resend |
 

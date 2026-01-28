@@ -43,9 +43,19 @@ users.created_by → users.id  -- Admin crea Authors
 CREATE INDEX idx_posts_status ON posts(status) WHERE deleted_at IS NULL;
 ```
 
-### 9. Full-Text Search nativo en PostgreSQL
-- `TSVECTOR` con pesos (A=título, B=excerpt, C=content)
-- No necesitas Elasticsearch para MVP
+### 9. Cuándo crear índices
+
+No pones índice en TODO. Solo en columnas que:
+- Se usan mucho en `WHERE`
+- Se usan en `ORDER BY`
+- Se usan en `JOIN`
+
+| Sin índice | Con índice |
+|------------|------------|
+| Buscar en un libro leyendo cada página | Ir directo al índice del final y encontrar la página |
+| Buscar tu contacto revisando TODO el celular | Buscar por la letra "M" en tu agenda |
+| Revisar 10,000 filas una por una | Saltar directamente a las 5 que necesitas |
+
 
 ### 10. ENUMs para estados finitos
 ```sql

@@ -12,42 +12,40 @@ The Replicant follows a modern **API-First** architecture with clear separation 
 
 ## Architecture Diagram
 
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                              CLIENT LAYER                                    │
-│  ┌─────────────────────┐           ┌─────────────────────┐                  │
-│  │   🌐 Browser        │           │  📱 Mobile App      │                  │
-│  │                     │           │     (Future)        │                  │
-│  └─────────┬───────────┘           └──────────┬──────────┘                  │
-└────────────┼────────────────────────────────┼───────────────────────────────┘
-             │                                  │
-             ▼                                  │ (future)
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                           FRONTEND (Vercel)                                  │
-│  ┌─────────────────────────────────────────────────────────────────────┐    │
-│  │                       ⚛️ Next.js 14+                                │    │
-│  │                   SSR/SSG, TypeScript, Tailwind                     │    │
-│  └─────────────────────────────────┬───────────────────────────────────┘    │
-└────────────────────────────────────┼────────────────────────────────────────┘
-                                     │
-                                     │ HTTPS/REST
-                                     ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                          BACKEND (Railway)                                   │
-│  ┌─────────────────────────────────────────────────────────────────────┐    │
-│  │                      ☕ Spring Boot 3.x                             │    │
-│  │                  REST API, Security, JPA                            │    │
-│  └──────────────────────┬─────────────────────┬────────────────────────┘    │
-└─────────────────────────┼─────────────────────┼─────────────────────────────┘
-                          │                     │
-                          ▼                     ▼
-┌────────────────────────────────────┐   ┌────────────────────────────────────┐
-│        DATABASE (Supabase)         │   │        EXTERNAL SERVICES           │
-│  ┌──────────────────────────────┐  │   │  ┌──────────────────────────────┐  │
-│  │     🐘 PostgreSQL 15+        │  │   │  │       📧 Resend              │  │
-│  │     Posts, Users, Tags       │  │   │  │       Email Service          │  │
-│  └──────────────────────────────┘  │   │  └──────────────────────────────┘  │
-└────────────────────────────────────┘   └────────────────────────────────────┘
+```mermaid
+flowchart TB
+    subgraph CLIENT["🖥️ CLIENT LAYER"]
+        Browser["🌐 Browser"]
+        Mobile["📱 Mobile App<br/>(Future)"]
+    end
+
+    subgraph FRONTEND["⚛️ FRONTEND (Vercel)"]
+        NextJS["Next.js 14+<br/>SSR/SSG, TypeScript, Tailwind"]
+    end
+
+    subgraph BACKEND["☕ BACKEND (Railway)"]
+        SpringBoot["Spring Boot 3.x<br/>REST API, Security, JPA"]
+    end
+
+    subgraph DATABASE["🐘 DATABASE (Supabase)"]
+        PostgreSQL[("PostgreSQL 15+<br/>Posts, Users, Tags")]
+    end
+
+    subgraph EXTERNAL["📧 EXTERNAL SERVICES"]
+        Resend["Resend<br/>Email Service"]
+    end
+
+    Browser --> NextJS
+    Mobile -.->|future| NextJS
+    NextJS -->|HTTPS/REST| SpringBoot
+    SpringBoot --> PostgreSQL
+    SpringBoot --> Resend
+
+    style CLIENT fill:#1e3a5f,stroke:#3b82f6,color:#fff
+    style FRONTEND fill:#0d9488,stroke:#14b8a6,color:#fff
+    style BACKEND fill:#7c3aed,stroke:#8b5cf6,color:#fff
+    style DATABASE fill:#059669,stroke:#10b981,color:#fff
+    style EXTERNAL fill:#dc2626,stroke:#ef4444,color:#fff
 ```
 
 ---
@@ -83,67 +81,39 @@ The Replicant follows a modern **API-First** architecture with clear separation 
 
 ## Data Flow
 
+### Public Read Flow (SSG)
+
+```mermaid
+sequenceDiagram
+    participant U as 👤 User
+    participant FE as ⚛️ Next.js
+    participant BE as ☕ Spring Boot
+    participant DB as 🐘 PostgreSQL
+
+    U->>FE: Visit /blog/my-post
+    FE->>BE: GET /api/v1/posts/my-post
+    BE->>DB: SELECT * FROM posts WHERE slug = ?
+    DB-->>BE: Post data
+    BE-->>FE: JSON response
+    FE-->>U: Rendered HTML (cached)
 ```
-┌──────────────────────────────────────────────────────────────────────────────┐
-│                         PUBLIC READ FLOW (SSG)                                │
-└──────────────────────────────────────────────────────────────────────────────┘
 
-  User              Next.js            Spring Boot          PostgreSQL
-   │                   │                    │                    │
-   │  Visit            │                    │                    │
-   │  /blog/my-post    │                    │                    │
-   │──────────────────>│                    │                    │
-   │                   │                    │                    │
-   │                   │ GET                │                    │
-   │                   │ /api/v1/posts/     │                    │
-   │                   │ my-post            │                    │
-   │                   │───────────────────>│                    │
-   │                   │                    │                    │
-   │                   │                    │ SELECT * FROM      │
-   │                   │                    │ posts WHERE        │
-   │                   │                    │ slug = ?           │
-   │                   │                    │───────────────────>│
-   │                   │                    │                    │
-   │                   │                    │     Post data      │
-   │                   │                    │<───────────────────│
-   │                   │                    │                    │
-   │                   │   JSON response    │                    │
-   │                   │<───────────────────│                    │
-   │                   │                    │                    │
-   │  Rendered HTML    │                    │                    │
-   │  (cached)         │                    │                    │
-   │<──────────────────│                    │                    │
+### Admin Write Flow
 
+```mermaid
+sequenceDiagram
+    participant U as 👤 User
+    participant FE as ⚛️ Next.js
+    participant BE as ☕ Spring Boot
+    participant DB as 🐘 PostgreSQL
 
-┌──────────────────────────────────────────────────────────────────────────────┐
-│                           ADMIN WRITE FLOW                                    │
-└──────────────────────────────────────────────────────────────────────────────┘
-
-  User              Next.js            Spring Boot          PostgreSQL
-   │                   │                    │                    │
-   │  Submit new post  │                    │                    │
-   │──────────────────>│                    │                    │
-   │                   │                    │                    │
-   │                   │ POST               │                    │
-   │                   │ /api/v1/posts      │                    │
-   │                   │ (+ JWT)            │                    │
-   │                   │───────────────────>│                    │
-   │                   │                    │                    │
-   │                   │                    │ Validate JWT       │
-   │                   │                    │ (internal)         │
-   │                   │                    │                    │
-   │                   │                    │ INSERT INTO posts  │
-   │                   │                    │───────────────────>│
-   │                   │                    │                    │
-   │                   │                    │   Created post     │
-   │                   │                    │<───────────────────│
-   │                   │                    │                    │
-   │                   │   201 Created      │                    │
-   │                   │<───────────────────│                    │
-   │                   │                    │                    │
-   │  Success          │                    │                    │
-   │  notification     │                    │                    │
-   │<──────────────────│                    │                    │
+    U->>FE: Submit new post
+    FE->>BE: POST /api/v1/posts (+ JWT)
+    BE->>BE: Validate JWT
+    BE->>DB: INSERT INTO posts
+    DB-->>BE: Created post
+    BE-->>FE: 201 Created
+    FE-->>U: Success notification
 ```
 
 ---
