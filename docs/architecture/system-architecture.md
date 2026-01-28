@@ -81,67 +81,39 @@ flowchart TB
 
 ## Data Flow
 
+### Public Read Flow (SSG)
+
+```mermaid
+sequenceDiagram
+    participant U as 👤 User
+    participant FE as ⚛️ Next.js
+    participant BE as ☕ Spring Boot
+    participant DB as 🐘 PostgreSQL
+
+    U->>FE: Visit /blog/my-post
+    FE->>BE: GET /api/v1/posts/my-post
+    BE->>DB: SELECT * FROM posts WHERE slug = ?
+    DB-->>BE: Post data
+    BE-->>FE: JSON response
+    FE-->>U: Rendered HTML (cached)
 ```
-┌──────────────────────────────────────────────────────────────────────────────┐
-│                         PUBLIC READ FLOW (SSG)                                │
-└──────────────────────────────────────────────────────────────────────────────┘
 
-  User              Next.js            Spring Boot          PostgreSQL
-   │                   │                    │                    │
-   │  Visit            │                    │                    │
-   │  /blog/my-post    │                    │                    │
-   │──────────────────>│                    │                    │
-   │                   │                    │                    │
-   │                   │ GET                │                    │
-   │                   │ /api/v1/posts/     │                    │
-   │                   │ my-post            │                    │
-   │                   │───────────────────>│                    │
-   │                   │                    │                    │
-   │                   │                    │ SELECT * FROM      │
-   │                   │                    │ posts WHERE        │
-   │                   │                    │ slug = ?           │
-   │                   │                    │───────────────────>│
-   │                   │                    │                    │
-   │                   │                    │     Post data      │
-   │                   │                    │<───────────────────│
-   │                   │                    │                    │
-   │                   │   JSON response    │                    │
-   │                   │<───────────────────│                    │
-   │                   │                    │                    │
-   │  Rendered HTML    │                    │                    │
-   │  (cached)         │                    │                    │
-   │<──────────────────│                    │                    │
+### Admin Write Flow
 
+```mermaid
+sequenceDiagram
+    participant U as 👤 User
+    participant FE as ⚛️ Next.js
+    participant BE as ☕ Spring Boot
+    participant DB as 🐘 PostgreSQL
 
-┌──────────────────────────────────────────────────────────────────────────────┐
-│                           ADMIN WRITE FLOW                                    │
-└──────────────────────────────────────────────────────────────────────────────┘
-
-  User              Next.js            Spring Boot          PostgreSQL
-   │                   │                    │                    │
-   │  Submit new post  │                    │                    │
-   │──────────────────>│                    │                    │
-   │                   │                    │                    │
-   │                   │ POST               │                    │
-   │                   │ /api/v1/posts      │                    │
-   │                   │ (+ JWT)            │                    │
-   │                   │───────────────────>│                    │
-   │                   │                    │                    │
-   │                   │                    │ Validate JWT       │
-   │                   │                    │ (internal)         │
-   │                   │                    │                    │
-   │                   │                    │ INSERT INTO posts  │
-   │                   │                    │───────────────────>│
-   │                   │                    │                    │
-   │                   │                    │   Created post     │
-   │                   │                    │<───────────────────│
-   │                   │                    │                    │
-   │                   │   201 Created      │                    │
-   │                   │<───────────────────│                    │
-   │                   │                    │                    │
-   │  Success          │                    │                    │
-   │  notification     │                    │                    │
-   │<──────────────────│                    │                    │
+    U->>FE: Submit new post
+    FE->>BE: POST /api/v1/posts (+ JWT)
+    BE->>BE: Validate JWT
+    BE->>DB: INSERT INTO posts
+    DB-->>BE: Created post
+    BE-->>FE: 201 Created
+    FE-->>U: Success notification
 ```
 
 ---
