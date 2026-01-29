@@ -27,10 +27,7 @@ dist/
 # Database
 *.db
 
-# Agent Configuration
-.agent/
-.gemini/
-Review The Replicant Project.md
+
 
 # Narrative Lore (Secret - Do not push)
 docs/narrative-architecture.md
