@@ -81,8 +81,11 @@ git pull origin dev
 ```
 
 ### 4. QA Promotion
+
+> **Policy**: Merge to QA only when **MVP is complete**, not after individual features.
+
 ```bash
-# When dev is ready for testing
+# When dev is ready for testing (MVP complete)
 git checkout qa
 git pull origin qa
 git merge dev

@@ -4,8 +4,8 @@
 
 This document outlines the complete development roadmap for The Replicant MVP, from initial setup to deployment and iteration.
 
-> **Current Focus**: Step 3 - Generate Architecture Diagram  
-> **Working Branch**: `feature/002-user-stories` (pending merge to `dev`)
+> **Current Focus**: Step 5 - Infrastructure Setup (PostgreSQL + Docker)  
+> **Working Branch**: `feature/005-infrastructure`
 
 ---
 
@@ -38,7 +38,7 @@ This document outlines the complete development roadmap for The Replicant MVP, f
 - [x] Document Epic 004: Organization (US-013 to US-015)
 - [x] Create MVP backlog with priorities (16 stories, 67 story points)
 - [x] Review and validate all user stories
-- [ ] Merge to `dev` after review
+- [x] Merge to `dev` after review
 
 **Deliverables**:
 - 16 user stories across 4 epics
@@ -70,38 +70,51 @@ This document outlines the complete development roadmap for The Replicant MVP, f
 
 ---
 
-### 4. Create API Contract ⏳
-**Status**: ⏳ Pending  
-**Branch**: `feature/004-api-contract` (create from `dev`)  
+### 4. Create API Contract ✅
+**Status**: ✅ Complete  
+**Branch**: `feature/004-api-contract`  
 **Description**: Define complete API specification using OpenAPI 3.0
 
 **Tasks**:
-- [ ] Create `backend/api-spec.yaml` OpenAPI specification
-- [ ] Define authentication endpoints (`/api/v1/auth/*`)
-- [ ] Define blog posts endpoints (`/api/v1/posts/*`)
-- [ ] Define categories and tags endpoints
-- [ ] Add request/response schemas
-- [ ] Document error responses (RFC 7807)
-- [ ] Add API security definitions
+- [x] Create `backend/api-spec.yaml` OpenAPI specification
+- [x] Define authentication endpoints (`/api/v1/auth/*`)
+- [x] Define blog posts endpoints (`/api/v1/posts/*`)
+- [x] Define categories and tags endpoints
+- [x] Add request/response schemas
+- [x] Document error responses (RFC 7807)
+- [x] Add API security definitions
 - [ ] Validate specification with Swagger Editor
 
 ---
 
-### 5. Project Setup ⏳
-**Status**: ⏳ Pending  
-**Branch**: `feature/005-project-setup` (create from `dev`)  
-**Description**: Initialize project structure and development environment
+### 5. Infrastructure Setup 🔄
+**Status**: 🔄 In Progress  
+**Branch**: `feature/005-infrastructure`  
+**Description**: Configure minimal infrastructure required for authentication
 
-**Tasks**:
-- [ ] Initialize Spring Boot backend (Maven, Java 21)
-- [ ] Initialize Next.js frontend (TypeScript, TailwindCSS)
-- [ ] Create `docker-compose.yml` (PostgreSQL only - no Redis for MVP)
-- [ ] Configure `.env.example` files
-- [ ] Setup Checkstyle + ESLint/Prettier
-- [ ] Create initial GitHub Actions workflow
-- [ ] Verify local development environment works
+**Tasks** (Priority: CRITICAL - Blocker for Auth):
+- [x] Initialize Spring Boot backend (Maven, Java 21)
+- [x] Add health endpoints with Swagger documentation
+- [ ] Create `docker-compose.yml` (PostgreSQL only)
+- [ ] Configure `.env.example` + `application.yml` profiles
+- [ ] Verify backend → PostgreSQL connection works
 
 > **💡 MVP Decision**: No Redis. PostgreSQL handles caching needs for MVP scale.
+
+---
+
+### 5b. Frontend & CI Setup ⏳
+**Status**: ⏳ Pending (Can run parallel to Auth)  
+**Branch**: `feature/005b-frontend-setup`  
+**Description**: Frontend initialization and CI pipeline (non-blocking)
+
+**Tasks**:
+- [ ] Initialize Next.js frontend (TypeScript, TailwindCSS)
+- [ ] Setup Checkstyle + ESLint/Prettier
+- [ ] Create initial GitHub Actions workflow
+- [ ] Configure frontend `.env.example`
+
+> **� Note**: These tasks can be done in parallel with Step 6 (Auth) since they don't block backend development.
 
 ---
 
@@ -210,14 +223,16 @@ This document outlines the complete development roadmap for The Replicant MVP, f
 |------|------|--------|--------|
 | 1 | Create Branches | ✅ Done | 0 |
 | 2 | User Stories | ✅ Done | 0 |
-| 3 | Architecture | 🔄 Next | 0 |
-| 4 | API Contract | ⏳ Pending | 0 |
-| 5 | Project Setup | ⏳ Pending | 1 |
+| 3 | Architecture | ✅ Done | 0 |
+| 4 | API Contract | ✅ Done | 0 |
+| 5 | Infrastructure Setup | 🔄 In Progress | 1 |
+| 5b | Frontend & CI Setup | ⏳ Parallel | 1-2 |
 | 6 | Basic Auth | ⏳ Pending | 1 |
 | 7 | CRUD Posts | ⏳ Pending | 2 |
 | 8 | Basic Frontend | ⏳ Pending | 2 |
 | 9 | Deploy | ⏳ Pending | 3 |
 | 10 | MVP Iteration | ⏳ Pending | 3 |
+| 11 | Narrative Implementation | ⏳ Pending | Post-MVP |
 
 ---
 
@@ -257,25 +272,17 @@ See [branching-strategy.md](branching-strategy.md) for full workflow details.
 
 ## Next Action
 
-> **🎯 Current**: Commit and merge Step 2 (User Stories), then start Step 3 (Architecture).
+> **🎯 Current**: Complete Step 5 - Infrastructure Setup
 >
-> ```bash
-> # 1. Commit Step 2 changes
-> git add .
-> git commit -m "docs: add MVP user stories and backlog (16 stories, 4 epics)"
-> git push origin feature/002-user-stories
->
-> # 2. Create PR: feature/002-user-stories → dev
-> # 3. After merge, start Step 3
-> git checkout dev
-> git pull origin dev
-> git checkout -b feature/003-architecture
-> ```
+> **Today's Tasks**:
+> 1. Create `docker-compose.yml` with PostgreSQL
+> 2. Configure `.env.example` + `application.yml` profiles
+> 3. Verify backend connects to PostgreSQL
+> 4. Begin Step 6 - Authentication implementation
 
 ---
 
-**Document Version**: 1.2  
+**Document Version**: 1.3  
 **Created**: 2026-01-13  
-**Last Updated**: 2026-01-18  
-**Next Review**: After Step 3 completion
-**Next Review**: After Step 2 completion
+**Last Updated**: 2026-01-29  
+**Next Review**: After Step 6 completion
