@@ -70,30 +70,31 @@ This document outlines the complete development roadmap for The Replicant MVP, f
 
 ---
 
-### 4. Create API Contract ⏳
-**Status**: ⏳ Pending  
-**Branch**: `feature/004-api-contract` (create from `dev`)  
+### 4. Create API Contract ✅
+**Status**: ✅ Complete  
+**Branch**: `feature/004-api-contract`  
 **Description**: Define complete API specification using OpenAPI 3.0
 
 **Tasks**:
-- [ ] Create `backend/api-spec.yaml` OpenAPI specification
-- [ ] Define authentication endpoints (`/api/v1/auth/*`)
-- [ ] Define blog posts endpoints (`/api/v1/posts/*`)
-- [ ] Define categories and tags endpoints
-- [ ] Add request/response schemas
-- [ ] Document error responses (RFC 7807)
-- [ ] Add API security definitions
+- [x] Create `backend/api-spec.yaml` OpenAPI specification
+- [x] Define authentication endpoints (`/api/v1/auth/*`)
+- [x] Define blog posts endpoints (`/api/v1/posts/*`)
+- [x] Define categories and tags endpoints
+- [x] Add request/response schemas
+- [x] Document error responses (RFC 7807)
+- [x] Add API security definitions
 - [ ] Validate specification with Swagger Editor
 
 ---
 
-### 5. Project Setup ⏳
-**Status**: ⏳ Pending  
-**Branch**: `feature/005-project-setup` (create from `dev`)  
+### 5. Project Setup ✅
+**Status**: ✅ Complete (Backend Only)  
+**Branch**: `feature/004-api-contract`  
 **Description**: Initialize project structure and development environment
 
 **Tasks**:
-- [ ] Initialize Spring Boot backend (Maven, Java 21)
+- [x] Initialize Spring Boot backend (Maven, Java 21)
+- [x] Add health endpoints with Swagger documentation
 - [ ] Initialize Next.js frontend (TypeScript, TailwindCSS)
 - [ ] Create `docker-compose.yml` (PostgreSQL only - no Redis for MVP)
 - [ ] Configure `.env.example` files

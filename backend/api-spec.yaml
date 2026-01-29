@@ -30,7 +30,11 @@ servers:
 
 tags:
   - name: Health
-    description: Health check endpoints
+    description: |
+      Health check endpoints for monitoring and orchestration:
+      - **/health** - Basic uptime check for simple monitoring tools
+      - **/health/ready** - Readiness probe for Kubernetes (checks dependencies like DB)
+      - **/health/live** - Liveness probe for Kubernetes (checks if app is responsive)
   - name: Authentication
     description: User authentication and authorization
   - name: Posts
@@ -53,6 +57,9 @@ paths:
     get:
       tags: [Health]
       summary: Basic health check
+      description: |
+        Returns the basic health status of the service.
+        Use this endpoint for simple uptime monitoring and load balancer health checks.
       operationId: healthCheck
       security: []
       responses:
@@ -67,6 +74,10 @@ paths:
     get:
       tags: [Health]
       summary: Readiness check (includes database)
+      description: |
+        Checks if the service is ready to receive traffic.
+        Validates connectivity to dependent services like the database.
+        Use this for Kubernetes readiness probes - failed checks will stop routing traffic to this instance.
       operationId: readinessCheck
       security: []
       responses:
@@ -82,6 +93,24 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetail'
+
+  /health/live:
+    get:
+      tags: [Health]
+      summary: Liveness check
+      description: |
+        Checks if the service is alive and not deadlocked.
+        A failed liveness check indicates the service should be restarted.
+        Use this for Kubernetes liveness probes.
+      operationId: livenessCheck
+      security: []
+      responses:
+        '200':
+          description: Service is alive
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
 
   # ============================================
   # AUTHENTICATION ENDPOINTS
