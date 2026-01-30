@@ -1,10 +1,33 @@
-# Application Configuration
+# ===========================================
+# The Replicant - Application Configuration
+# ===========================================
+
 server:
   port: ${PORT:8080}
+  error:
+    include-message: always
+    include-binding-errors: always
 
 spring:
   application:
     name: the-replicant-api
+  
+  # Database Configuration (PostgreSQL)
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:replicant_db}
+    username: ${POSTGRES_USER:replicant}
+    password: ${POSTGRES_PASSWORD:replicant123}
+    driver-class-name: org.postgresql.Driver
+
+  # JPA / Hibernate
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
 
 # Actuator endpoints
 management:
@@ -15,6 +38,7 @@ management:
   endpoint:
     health:
       show-details: always
+      show-components: always
 
 # OpenAPI / Swagger
 springdoc:
@@ -23,3 +47,58 @@ springdoc:
   swagger-ui:
     path: /swagger-ui.html
     operationsSorter: method
+
+# JWT Configuration (for Step 6)
+jwt:
+  secret: ${JWT_SECRET:default-dev-secret-change-in-production}
+  expiration-ms: ${JWT_EXPIRATION_MS:86400000}
+
+# Logging
+logging:
+  level:
+    root: INFO
+    com.thereplicant: DEBUG
+
+---
+# ===========================================
+# Test Profile (H2 In-Memory)
+# ===========================================
+spring:
+  config:
+    activate:
+      on-profile: test
+  
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1
+    username: sa
+    password: 
+    driver-class-name: org.h2.Driver
+  
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+
+---
+# ===========================================
+# Production Profile (Railway + Supabase)
+# ===========================================
+spring:
+  config:
+    activate:
+      on-profile: prod
+  
+  datasource:
+    url: ${DATABASE_URL}
+  
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+
+logging:
+  level:
+    root: WARN
+    com.thereplicant: INFO
