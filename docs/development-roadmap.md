@@ -130,7 +130,7 @@ This document outlines the complete development roadmap for The Replicant MVP, f
 - [x] Add JWT authentication filter (`JwtAuthenticationFilter.java`)
 - [x] Add password encryption (BCrypt - strength 12)
 - [x] Create dev testing endpoint (`DevTokenController.java` - disabled in prod)
-- [ ] Write Unit Tests for JwtService (6 test cases pending)
+- [x] Write Unit Tests for JwtService (8 test cases - ✅ all passing)
 - [ ] Create User entity and repository
 - [ ] Implement `/api/v1/auth/register` endpoint
 - [ ] Implement `/api/v1/auth/login` endpoint
