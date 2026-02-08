@@ -62,6 +62,42 @@ No pones índice en TODO. Solo en columnas que:
 status ENUM('DRAFT', 'PUBLISHED')  -- DB valida valores
 ```
 
+### 11. Enums en Java: Mapeo de campos ENUM de la base de datos
+
+**¿Qué es un Enum en Java?**  
+Un `enum` es un tipo de dato especial que representa un conjunto **fijo** de constantes. Es como una lista cerrada de opciones válidas.
+
+```java
+// Role.java - NO es una tabla, es un enum Java
+public enum Role {
+    ADMIN,    // Constante 1
+    AUTHOR    // Constante 2
+}
+```
+
+**¿Por qué crear una clase Enum para campos ENUM de la BD?**
+
+| Sin Enum Java | Con Enum Java |
+|---------------|---------------|
+| `user.setRole("admin")` ← Puede haber typos | `user.setRole(Role.ADMIN)` ← Autocompletado |
+| `if (role.equals("ADMIN"))` ← Error-prone | `if (role == Role.ADMIN)` ← Type-safe |
+| No hay validación en compile time | Error de compilación si usas valor inválido |
+
+**Cómo se mapea a la base de datos:**
+```java
+// En User.java
+@Enumerated(EnumType.STRING)  // Guarda "ADMIN" o "AUTHOR" como texto
+@Column(nullable = false)
+private Role role;
+```
+
+| Enfoque | En la BD almacena | Pros/Cons |
+|---------|-------------------|-----------|
+| `EnumType.STRING` | `"ADMIN"` (texto) | ✅ Legible, seguro si renombras |
+| `EnumType.ORDINAL` | `0`, `1` (índice) | ❌ Se rompe si reordenas el enum |
+
+**Regla:** Cuando tu esquema de BD tiene un campo `ENUM`, crea un `enum` Java correspondiente para tener validación en tiempo de compilación y evitar errores de typos.
+
 ---
 
 ## 🔀 Git Workflows
