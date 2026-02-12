@@ -113,6 +113,14 @@ git rm --cached .env              # Remueve del tracking, mantiene el archivo
 git commit -m "Stop tracking .env"
 ```
 
+**⚠️ ¿Qué NUNCA debes subir a GitHub?**
+- Tokens JWT reales (Hacerse pasar por ti o cualquier usuario sin necesitar contraseña. Accede al dashboard admin, borra posts, modifica datos.)
+- Contraseñas de producción (Entrar directamente a tu cuenta, a la base de datos, o a cualquier servicio donde uses esa contraseña.)
+- Archivos `.env` con secrets (Tiene TODAS las llaves: database URL, JWT secret, API keys. Es como entregar las llaves de tu casa.)
+- API keys de servicios externos (Usar tus servicios a tu nombre (y a tu costo). Ejemplo: si subes una API key de AWS, pueden crear servidores y te llega la factura de miles de dólares.)
+
+Scripts de prueba con datos de desarrollo (localhost, credenciales genéricas) **SÍ son seguros** de subir.
+
 ### 2. Sincronizar antes de trabajar
 ```bash
 # SIEMPRE antes de hacer cambios:
@@ -148,6 +156,103 @@ git push origin main
 
 ---
 
-**Document Version**: 1.0  
+## 🧪 Unit Testing: Definir Alcance y Escenarios
+
+### 1. Cada método público es una unidad
+
+> **Cada método público del servicio es una unidad que debe testearse.**
+
+No testeas métodos privados directamente. Los privados se cubren indirectamente al testear los públicos que los usan.
+
+```
+AuthService tiene 5 métodos públicos:
+├── checkStatus()    → 2 tests
+├── setup()          → 4 tests
+├── login()          → 4 tests
+├── refreshToken()   → 5 tests
+└── logout()         → 2 tests
+Total: 17 tests
+```
+
+### 2. ¿Qué puede pasar? (Definir escenarios)
+
+> **La pregunta clave por cada método es: ¿Qué puede pasar?**
+
+Para cada método, dibuja un árbol de decisiones:
+
+```
+login(email, password)
+├── ¿Existe el usuario?
+│     ├── NO → BadCredentialsException
+│     └── SI → ¿Password correcto?
+│               ├── NO → BadCredentialsException
+│               └── SI → Retornar tokens ✅
+└── Cada rama = al menos 1 test
+```
+
+### 3. Fórmula para tipos de test
+
+| Tipo | ¿Qué valida? | Ejemplo |
+|------|---------------|---------|
+| **Happy path** | Funciona correctamente | Login exitoso retorna tokens |
+| **Guard clauses** | Validaciones iniciales | Setup falla si ya hay usuarios |
+| **Excepciones** | Falla de forma segura | Password incorrecto lanza excepción |
+| **Seguridad** | Reglas OWASP | Mismo mensaje para user-not-found y wrong-password |
+| **Edge cases** | Datos límite | Logout sin tokens no crash |
+
+**Regla:** Cada `if`, `throw`, o rama de decisión → al menos 1 test.
+
+### 4. Unit Test vs Integration Test
+
+> **El Unit Test verifica que cada pieza funciona aislada. El Integration Test verifica que todas las piezas funcionan juntas, desde el HTTP request hasta la base de datos.**
+
+| | Unit Test | Integration Test |
+|---|---|---|
+| **Dependencias** | Mockeadas (Mockito) | Reales (Spring Boot levantado) |
+| **Base de datos** | No hay | H2 en memoria |
+| **HTTP** | No hay | MockMvc (requests reales) |
+| **Velocidad** | Milisegundos | Segundos |
+| **Valida** | Lógica de negocio aislada | Que todo funcione junto (JSON, validación, seguridad, BD) |
+
+**MockMvc:** La única parte simulada en un integration test es la capa HTTP. En lugar de abrir un puerto como `localhost:8080`, MockMvc pasa la petición directo al controller dentro de la JVM. Todo lo demás (service, repository, BD) es real.
+
+**H2:** Es una base de datos relacional que corre en memoria dentro de Java. Se usa como sustituto de PostgreSQL en tests: se crea automáticamente al iniciar el test, Spring JPA genera las tablas desde las `@Entity`, y la BD desaparece al terminar. No necesitas instalar nada externo.
+
+### 5. Testea comportamiento, no implementación
+
+> **Un buen test valida comportamiento, no implementación.**
+
+**¿Qué significa?** Un test debe verificar **qué efecto produce** tu código (lo que el usuario o sistema experimenta), no **cómo lo hace internamente** (los detalles técnicos).
+
+**Ejemplo real (token rotation):**
+
+```
+❌ Test de implementación (frágil):
+   "El nuevo refresh token debe ser un string diferente al anterior"
+   → Compara strings internos. Si el algoritmo genera el mismo string
+     por timing, el test falla aunque la rotación funcione bien.
+
+✅ Test de comportamiento (robusto):
+   "Después de hacer refresh, el token anterior ya no funciona"
+   → Verifica el EFECTO real: el viejo se revocó.
+     No importa cómo se ve el nuevo, importa que el viejo murió.
+```
+
+**¿Por qué importa?**
+- Los tests de implementación se rompen cuando refactorizas el código interno (aunque funcione igual).
+- Los tests de comportamiento solo se rompen cuando el sistema deja de funcionar correctamente.
+- Un test frágil que falla sin razón genera ruido → te acostumbras a ignorar el rojo → un bug real pasa desapercibido.
+
+**Regla:** Pregúntate "¿qué le importa al usuario/sistema?" y testea eso.
+
+---
+
+## 🌐 cURL (Client URL)
+
+**cURL** = Client URL. Es una herramienta de línea de comandos para enviar peticiones HTTP (y otros protocolos) desde la terminal. Piénsalo como un navegador sin interfaz visual. Es la forma más directa de hablarle a un servidor HTTP. Lo que Postman hace con botones, cURL lo hace con texto.
+
+---
+
+**Document Version**: 1.3  
 **Created**: 2026-01-21  
-**Last Updated**: 2026-01-21
+**Last Updated**: 2026-02-11
