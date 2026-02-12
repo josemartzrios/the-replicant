@@ -4,8 +4,8 @@
 
 This document outlines the complete development roadmap for The Replicant MVP, from initial setup to deployment and iteration.
 
-> **Current Focus**: Step 5 - Infrastructure Setup (PostgreSQL + Docker)  
-> **Working Branch**: `feature/005-infrastructure`
+> **Current Focus**: Step 6 - Basic Authentication (JWT)  
+> **Working Branch**: `feature/006-authentication`
 
 ---
 
@@ -87,17 +87,18 @@ This document outlines the complete development roadmap for The Replicant MVP, f
 
 ---
 
-### 5. Infrastructure Setup 🔄
-**Status**: 🔄 In Progress  
+### 5. Infrastructure Setup ✅
+**Status**: ✅ Completed  
+**Completed**: 2026-02-05  
 **Branch**: `feature/005-infrastructure`  
 **Description**: Configure minimal infrastructure required for authentication
 
-**Tasks** (Priority: CRITICAL - Blocker for Auth):
+**Tasks**:
 - [x] Initialize Spring Boot backend (Maven, Java 21)
 - [x] Add health endpoints with Swagger documentation
-- [ ] Create `docker-compose.yml` (PostgreSQL only)
-- [ ] Configure `.env.example` + `application.yml` profiles
-- [ ] Verify backend → PostgreSQL connection works
+- [x] Create `docker-compose.yml` (PostgreSQL only)
+- [x] Configure `.env.example` + `application.yml` profiles
+- [x] Verify backend → PostgreSQL connection works
 
 > **💡 MVP Decision**: No Redis. PostgreSQL handles caching needs for MVP scale.
 
@@ -118,21 +119,24 @@ This document outlines the complete development roadmap for The Replicant MVP, f
 
 ---
 
-### 6. Basic Auth ⏳
-**Status**: ⏳ Pending  
-**Branch**: `feature/006-authentication` (create from `dev`)  
+### 6. Basic Auth 🔄
+**Status**: 🔄 In Progress  
+**Branch**: `feature/006-authentication`  
 **Description**: Implement JWT-based authentication system
 
 **Tasks**:
-- [ ] Setup Spring Security configuration
+- [x] Setup Spring Security configuration (`SecurityConfig.java`)
+- [x] Implement JWT token generation/validation (`JwtService.java`)
+- [x] Add JWT authentication filter (`JwtAuthenticationFilter.java`)
+- [x] Add password encryption (BCrypt - strength 12)
+- [x] Create dev testing endpoint (`DevTokenController.java` - disabled in prod)
+- [x] Write Unit Tests for JwtService (8 test cases - ✅ all passing)
 - [ ] Create User entity and repository
-- [ ] Implement JWT token generation/validation
 - [ ] Implement `/api/v1/auth/register` endpoint
 - [ ] Implement `/api/v1/auth/login` endpoint
 - [ ] Implement `/api/v1/auth/refresh` endpoint
-- [ ] Add password encryption (BCrypt)
 - [ ] Create user DTOs and validators
-- [ ] Write unit + integration tests (≥80% coverage)
+- [ ] Write integration tests for auth endpoints (≥80% coverage)
 
 ---
 
@@ -225,9 +229,9 @@ This document outlines the complete development roadmap for The Replicant MVP, f
 | 2 | User Stories | ✅ Done | 0 |
 | 3 | Architecture | ✅ Done | 0 |
 | 4 | API Contract | ✅ Done | 0 |
-| 5 | Infrastructure Setup | 🔄 In Progress | 1 |
+| 5 | Infrastructure Setup | ✅ Done | 1 |
 | 5b | Frontend & CI Setup | ⏳ Parallel | 1-2 |
-| 6 | Basic Auth | ⏳ Pending | 1 |
+| 6 | Basic Auth | 🔄 In Progress | 1 |
 | 7 | CRUD Posts | ⏳ Pending | 2 |
 | 8 | Basic Frontend | ⏳ Pending | 2 |
 | 9 | Deploy | ⏳ Pending | 3 |
@@ -272,17 +276,17 @@ See [branching-strategy.md](branching-strategy.md) for full workflow details.
 
 ## Next Action
 
-> **🎯 Current**: Complete Step 5 - Infrastructure Setup
+> **🎯 Current**: Continue Step 6 - Basic Authentication
 >
-> **Today's Tasks**:
-> 1. Create `docker-compose.yml` with PostgreSQL
-> 2. Configure `.env.example` + `application.yml` profiles
-> 3. Verify backend connects to PostgreSQL
-> 4. Begin Step 6 - Authentication implementation
+> **Next Session Tasks**:
+> 1. Write Unit Tests for JwtService (6 test cases)
+> 2. Create User entity and repository
+> 3. Implement auth endpoints (register, login, refresh)
+> 4. Create user DTOs and validators
 
 ---
 
 **Document Version**: 1.3  
 **Created**: 2026-01-13  
-**Last Updated**: 2026-01-29  
+**Last Updated**: 2026-02-05  
 **Next Review**: After Step 6 completion

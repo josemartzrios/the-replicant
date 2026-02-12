@@ -10,7 +10,7 @@ Secure authentication system with JWT tokens and invite-based user management. D
 
 ---
 
-## US-001: Admin Login
+## US-001: Admin Login ✅
 
 **As an** admin  
 **I want** to log in with my credentials  
@@ -18,11 +18,11 @@ Secure authentication system with JWT tokens and invite-based user management. D
 
 ### Acceptance Criteria
 
-- [ ] Login form accepts email and password
-- [ ] Invalid credentials show error message (generic, no user enumeration)
-- [ ] Successful login redirects to admin dashboard
-- [ ] JWT token stored securely (httpOnly cookie or secure storage)
-- [ ] Token expires after 24 hours
+- [x] Login form accepts email and password
+- [x] Invalid credentials show error message (generic, no user enumeration)
+- [ ] Successful login redirects to admin dashboard (frontend pending)
+- [ ] JWT token stored securely (httpOnly cookie or secure storage) (frontend pending)
+- [x] Token expires after 24 hours
 - [ ] Rate limiting: max 5 failed attempts per 15 minutes
 - [ ] Account lockout after 10 consecutive failures (30 min cooldown)
 
@@ -36,15 +36,15 @@ Secure authentication system with JWT tokens and invite-based user management. D
 
 ### Security Considerations
 
-- [ ] Use HTTPS only
-- [ ] Implement CSRF protection
-- [ ] Log all authentication attempts (success and failure)
-- [ ] Generic error messages (prevent user enumeration)
+- [ ] Use HTTPS only (deploy time)
+- [ ] Implement CSRF protection (deploy time)
+- [x] Log all authentication attempts (success and failure)
+- [x] Generic error messages (prevent user enumeration)
 - [ ] Delay response on failed attempts (+500ms per failure)
 
 ---
 
-## US-002a: First Admin Setup (One-Time)
+## US-002a: First Admin Setup (One-Time) ✅
 
 **As the** blog owner deploying the application for the first time  
 **I want** to create my admin account through a secure one-time setup  
@@ -52,14 +52,14 @@ Secure authentication system with JWT tokens and invite-based user management. D
 
 ### Acceptance Criteria
 
-- [ ] Setup page available ONLY when zero users exist in database
-- [ ] Setup route: `/setup` (frontend) redirects to login if users exist
-- [ ] Form requires: email, name, password, confirm password
-- [ ] Password minimum: 12 characters, 1 uppercase, 1 number, 1 special
-- [ ] User created with role = ADMIN automatically
-- [ ] Automatic login after successful setup
-- [ ] Endpoint returns 403 Forbidden if any user already exists
-- [ ] Success message: "Admin account created. Welcome to The Replicant!"
+- [x] Setup page available ONLY when zero users exist in database
+- [ ] Setup route: `/setup` (frontend) redirects to login if users exist (frontend pending)
+- [x] Form requires: email, name, password, confirm password
+- [x] Password minimum: 12 characters, 1 uppercase, 1 number, 1 special
+- [x] User created with role = ADMIN automatically
+- [x] Automatic login after successful setup
+- [x] Endpoint returns 403 Forbidden if any user already exists
+- [ ] Success message: "Admin account created. Welcome to The Replicant!" (frontend pending)
 
 ### Technical Notes
 
@@ -89,9 +89,9 @@ User visits /setup
 
 ### Security Considerations
 
-- [ ] Double-check user count in a transaction (prevent race conditions)
-- [ ] Log the setup event with IP address and timestamp
-- [ ] No way to re-enable this endpoint after first admin exists
+- [x] Double-check user count in a transaction (prevent race conditions)
+- [x] Log the setup event with IP address and timestamp
+- [x] No way to re-enable this endpoint after first admin exists
 
 ### Test Cases
 
@@ -157,7 +157,7 @@ User {
 
 ---
 
-## US-003: Token Refresh
+## US-003: Token Refresh ✅
 
 **As an** authenticated user  
 **I want** my session to refresh automatically  
@@ -165,11 +165,11 @@ User {
 
 ### Acceptance Criteria
 
-- [ ] Access token refreshes before expiration (silent refresh)
-- [ ] Refresh token valid for 7 days
-- [ ] Refresh token rotated on each use (one-time use)
-- [ ] Invalid refresh token requires re-login
-- [ ] Logout invalidates all tokens for that user
+- [ ] Access token refreshes before expiration (silent refresh) (frontend pending)
+- [x] Refresh token valid for 7 days
+- [x] Refresh token rotated on each use (one-time use)
+- [x] Invalid refresh token requires re-login
+- [x] Logout invalidates all tokens for that user
 
 ### Technical Notes
 
@@ -181,9 +181,9 @@ User {
 
 ### Security Considerations
 
-- [ ] Refresh tokens are one-time use
-- [ ] Detect token reuse attacks (if old token used, invalidate all)
-- [ ] Store hashed refresh tokens in database
+- [x] Refresh tokens are one-time use
+- [x] Detect token reuse attacks (if old token used, invalidate all)
+- [x] Store hashed refresh tokens in database
 
 ---
 
@@ -261,7 +261,7 @@ If you didn't request this, ignore this email.
 
 
 
-## US-005: Logout
+## US-005: Logout ✅
 
 **As an** authenticated user  
 **I want** to log out securely  
@@ -269,10 +269,10 @@ If you didn't request this, ignore this email.
 
 ### Acceptance Criteria
 
-- [ ] Logout button in dashboard header
-- [ ] All tokens invalidated on server
-- [ ] Redirect to login page
-- [ ] Confirmation that logout was successful
+- [ ] Logout button in dashboard header (frontend pending)
+- [x] All tokens invalidated on server
+- [ ] Redirect to login page (frontend pending)
+- [ ] Confirmation that logout was successful (frontend pending)
 
 ### Technical Notes
 
@@ -285,7 +285,7 @@ If you didn't request this, ignore this email.
 
 ---
 
-**Epic Status**: ⏳ Pending  
+**Epic Status**: 🔄 In Progress (4/6 backend complete)  
 **Created**: 2026-01-18  
-**Last Updated**: 2026-01-18  
-**Stories**: US-001, US-002, US-003, US-004, US-005
+**Last Updated**: 2026-02-11  
+**Stories**: US-001 ✅, US-002a ✅, US-002 ⏳, US-003 ✅, US-004 ⏳, US-005 ✅
