@@ -4,6 +4,7 @@ import com.thereplicant.api.dto.auth.*;
 import com.thereplicant.api.entity.RefreshToken;
 import com.thereplicant.api.entity.Role;
 import com.thereplicant.api.entity.User;
+import com.thereplicant.api.exception.SetupAlreadyCompletedException;
 import com.thereplicant.api.repository.RefreshTokenRepository;
 import com.thereplicant.api.repository.UserRepository;
 import com.thereplicant.api.security.JwtService;
@@ -66,7 +67,7 @@ class AuthServiceTest {
 
     // Test constants
     private static final String TEST_EMAIL = "admin@thereplicant.com";
-    private static final String TEST_PASSWORD = "SecurePassword123!";
+    private static final String TEST_PASSWORD = "SecurePassword123!"; // 12+ chars, 1 upper, 1 digit, 1 special
     private static final String TEST_NAME = "Admin User";
     private static final String ENCODED_PASSWORD = "$2a$12$hashedPasswordValue";
     private static final String MOCK_ACCESS_TOKEN = "eyJhbGciOiJIUzI1NiJ9.mock.token";
@@ -214,14 +215,14 @@ class AuthServiceTest {
         }
 
         @Test
-        @DisplayName("Should throw IllegalStateException when users already exist")
+        @DisplayName("Should throw SetupAlreadyCompletedException when users already exist")
         void shouldThrowWhenUsersExist() {
             // Arrange
             when(userRepository.count()).thenReturn(1L);
 
             // Act & Assert
             assertThatThrownBy(() -> authService.setup(validRequest))
-                    .isInstanceOf(IllegalStateException.class)
+                    .isInstanceOf(SetupAlreadyCompletedException.class)
                     .hasMessageContaining("Setup already completed");
 
             verify(userRepository, never()).save(any());

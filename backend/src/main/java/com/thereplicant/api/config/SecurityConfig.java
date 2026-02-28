@@ -2,6 +2,7 @@ package com.thereplicant.api.config;
 
 import com.thereplicant.api.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -18,14 +19,21 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Spring Security Configuration for The Replicant API.
  * 
- * Configures JWT-based stateless authentication with the following security
- * rules:
- * - Public endpoints: health checks, API docs, auth endpoints
- * - Protected endpoints: All other API routes require valid JWT
+ * Configures JWT-based stateless authentication with:
+ * - Public/protected endpoint authorization
+ * - OWASP Security Headers (CSP, X-Frame-Options, HSTS)
+ * - CORS for frontend communication
+ * - Stateless session management
  * 
  * @see JwtAuthenticationFilter for JWT token validation
  */
@@ -38,22 +46,29 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final UserDetailsService userDetailsService;
 
+    @Value("${cors.allowed-origins:http://localhost:3000}")
+    private String allowedOrigins;
+
     /**
      * Public endpoints that don't require authentication.
-     * Following OWASP guidelines: minimum necessary access.
+     * Following OWASP: minimum necessary access.
      */
     private static final String[] PUBLIC_ENDPOINTS = {
             // Health & Monitoring
             "/actuator/**",
             "/health",
+            "/health/**",
 
             // API Documentation
             "/api-docs/**",
             "/swagger-ui/**",
             "/swagger-ui.html",
 
-            // Authentication endpoints
-            "/api/v1/auth/**",
+            // Authentication endpoints (logout excluded - requires JWT)
+            "/api/v1/auth/status",
+            "/api/v1/auth/setup",
+            "/api/v1/auth/login",
+            "/api/v1/auth/refresh",
 
             // Public blog content (read-only)
             "/api/v1/posts",
@@ -69,15 +84,34 @@ public class SecurityConfig {
      * Main security filter chain configuration.
      * 
      * Security decisions:
-     * - CSRF disabled: Stateless JWT-based auth doesn't need CSRF protection
+     * - CSRF disabled: Stateless JWT-based auth doesn't need CSRF
      * - Session: STATELESS - no server-side session storage
-     * - JWT filter: Validates token before Spring Security's auth filter
+     * - Headers: OWASP recommended security headers
+     * - CORS: Configured for frontend origin
      */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
                 // Disable CSRF - not needed for stateless JWT auth
                 .csrf(AbstractHttpConfigurer::disable)
+
+                // CORS configuration for frontend
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+
+                // OWASP Security Headers
+                .headers(headers -> headers
+                        // Prevent clickjacking
+                        .frameOptions(frame -> frame.deny())
+                        // Prevent MIME type sniffing
+                        .contentTypeOptions(contentType -> {
+                        })
+                        // Content Security Policy - restrict resource loading
+                        .contentSecurityPolicy(csp -> csp
+                                .policyDirectives("default-src 'self'; frame-ancestors 'none'"))
+                        // Force HTTPS (1 year)
+                        .httpStrictTransportSecurity(hsts -> hsts
+                                .maxAgeInSeconds(31536000)
+                                .includeSubDomains(true)))
 
                 // Configure endpoint authorization
                 .authorizeHttpRequests(auth -> auth
@@ -95,6 +129,26 @@ public class SecurityConfig {
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
 
                 .build();
+    }
+
+    /**
+     * CORS configuration.
+     * Restricts cross-origin requests to allowed frontend origins.
+     * OWASP: Never use wildcard (*) in production.
+     */
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(Arrays.asList(allowedOrigins.split(",")));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-Requested-With"));
+        configuration.setExposedHeaders(List.of("Authorization"));
+        configuration.setAllowCredentials(true);
+        configuration.setMaxAge(3600L); // Cache preflight for 1 hour
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/api/**", configuration);
+        return source;
     }
 
     /**

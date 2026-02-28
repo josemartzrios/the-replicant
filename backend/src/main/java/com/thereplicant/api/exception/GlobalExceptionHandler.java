@@ -17,7 +17,7 @@ import java.util.Map;
  * Global exception handler for REST API.
  * Returns RFC 7807 Problem Details format for all errors.
  * 
- * @see https://datatracker.ietf.org/doc/html/rfc7807
+ * @see <a href="https://datatracker.ietf.org/doc/html/rfc7807">RFC 7807</a>
  */
 @Slf4j
 @RestControllerAdvice
@@ -47,13 +47,15 @@ public class GlobalExceptionHandler {
 
     /**
      * Handle authentication failures (invalid credentials).
-     * Returns generic message to prevent user enumeration.
+     * OWASP: Always return the same generic message to prevent user enumeration.
+     * The message is hardcoded here regardless of the actual exception detail
+     * to guarantee anti-enumeration even if someone modifies AuthService.
      */
     @ExceptionHandler(BadCredentialsException.class)
     public ProblemDetail handleBadCredentials(BadCredentialsException ex) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(
                 HttpStatus.UNAUTHORIZED,
-                ex.getMessage());
+                "Invalid email or password");
         problem.setTitle("Authentication Failed");
         problem.setType(URI.create("https://thereplicant.blog/errors/authentication"));
 
@@ -62,14 +64,16 @@ public class GlobalExceptionHandler {
 
     /**
      * Handle setup already completed (conflict).
+     * Uses custom exception instead of generic IllegalStateException
+     * to avoid catching unrelated exceptions as 409.
      */
-    @ExceptionHandler(IllegalStateException.class)
-    public ProblemDetail handleIllegalState(IllegalStateException ex) {
+    @ExceptionHandler(SetupAlreadyCompletedException.class)
+    public ProblemDetail handleSetupAlreadyCompleted(SetupAlreadyCompletedException ex) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(
                 HttpStatus.CONFLICT,
                 ex.getMessage());
-        problem.setTitle("Conflict");
-        problem.setType(URI.create("https://thereplicant.blog/errors/conflict"));
+        problem.setTitle("Setup Already Completed");
+        problem.setType(URI.create("https://thereplicant.blog/errors/setup-conflict"));
 
         return problem;
     }

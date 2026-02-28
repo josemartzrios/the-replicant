@@ -1,0 +1,120 @@
+# Audit Fixes — The Replicant Security & Architecture Remediation
+
+Aplicar los 10 hallazgos de la auditoría del proyecto (calificación actual: 7.5/10).
+
+## Proposed Changes
+
+### 🔴 P0 — Críticos (3 fixes)
+
+---
+
+#### [MODIFY] [.gitignore](file:///c:/Users/josma/OneDrive/Escritorio/the-replicant/.gitignore)
+
+Dejar de ignorar el Maven Wrapper para que cualquier dev pueda ejecutar `./mvnw` al clonar el repo.
+
+```diff
+-# Java/Spring Boot
+-target/
+-*.class
+-*.jar
+-*.war
+-.mvn/
+-mvnw
+-mvnw.cmd
++# Java/Spring Boot
++target/
++*.class
++*.jar
++*.war
++# Maven Wrapper - keep in repo except jar
++.mvn/wrapper/maven-wrapper.jar
+```
+
+---
+
+#### [MODIFY] [SecurityConfig.java](file:///c:/Users/josma/OneDrive/Escritorio/the-replicant/backend/src/main/java/com/thereplicant/api/config/SecurityConfig.java)
+
+Agregar Security Headers OWASP y configuración CORS para el frontend Next.js.
+
+- **Security Headers**: CSP, X-Frame-Options DENY, HSTS
+- **CORS**: Permitir `localhost:3000` (dev) con orígenes configurables via properties
+
+---
+
+#### [MODIFY] [AuthController.java](file:///c:/Users/josma/OneDrive/Escritorio/the-replicant/backend/src/main/java/com/thereplicant/api/controller/AuthController.java)
+
+Agregar endpoint `POST /api/v1/auth/logout` que invoca `authService.logout()` (el método ya existe en [AuthService](file:///c:/Users/josma/OneDrive/Escritorio/the-replicant/backend/src/main/java/com/thereplicant/api/service/AuthService.java#37-247)).
+
+---
+
+### 🟡 P1 — Medios (4 fixes)
+
+---
+
+#### [MODIFY] [GlobalExceptionHandler.java](file:///c:/Users/josma/OneDrive/Escritorio/the-replicant/backend/src/main/java/com/thereplicant/api/exception/GlobalExceptionHandler.java)
+
+1. **Hallazgo #6**: Reemplazar `IllegalStateException` handler con excepción custom `SetupAlreadyCompletedException`
+2. **Hallazgo #7**: Hardcodear mensaje genérico en `BadCredentialsException` handler (`"Invalid email or password"`)
+
+#### [NEW] [SetupAlreadyCompletedException.java](file:///c:/Users/josma/OneDrive/Escritorio/the-replicant/backend/src/main/java/com/thereplicant/api/exception/SetupAlreadyCompletedException.java)
+
+Excepción custom para reemplazar `IllegalStateException` genérica.
+
+#### [MODIFY] [AuthService.java](file:///c:/Users/josma/OneDrive/Escritorio/the-replicant/backend/src/main/java/com/thereplicant/api/service/AuthService.java)
+
+Cambiar `throw new IllegalStateException(...)` por `throw new SetupAlreadyCompletedException(...)`.
+
+---
+
+#### [MODIFY] [HealthController.java](file:///c:/Users/josma/OneDrive/Escritorio/the-replicant/backend/src/main/java/com/thereplicant/api/controller/HealthController.java)
+
+Inyectar `DataSource` y hacer un `connection.isValid()` real en el readiness probe, en vez del TODO obsoleto.
+
+---
+
+#### [MODIFY] [SetupRequest.java](file:///c:/Users/josma/OneDrive/Escritorio/the-replicant/backend/src/main/java/com/thereplicant/api/dto/auth/SetupRequest.java)
+
+Agregar `@Pattern` regex para validar complejidad de password: mín 12 chars, 1 mayúscula, 1 número, 1 carácter especial (alineado con user stories).
+
+#### [MODIFY] [LoginRequest.java](file:///c:/Users/josma/OneDrive/Escritorio/the-replicant/backend/src/main/java/com/thereplicant/api/dto/auth/LoginRequest.java)
+
+No se modifica — login no necesita validar complejidad (solo compara contra hash).
+
+---
+
+### 🟡 P2 — Menores (1 fix)
+
+#### [MODIFY] [DevTokenController.java](file:///c:/Users/josma/OneDrive/Escritorio/the-replicant/backend/src/main/java/com/thereplicant/api/controller/DevTokenController.java)
+
+Cambiar `@Profile("!prod")` por `@Profile("dev")` para ser más restrictivo — solo activo cuando explícitamente se usa perfil `dev`.
+
+---
+
+## Verification Plan
+
+### Automated Tests
+
+1. **Tests existentes** — Deben seguir pasando después de los cambios:
+   - Ejecutar desde IntelliJ: Run All Tests (JwtServiceTest + AuthServiceTest + Integration)
+   - Verificar que los 41 tests siguen en verde
+
+2. **Test a actualizar** — En [AuthServiceTest.java](file:///c:/Users/josma/OneDrive/Escritorio/the-replicant/backend/src/test/java/com/thereplicant/api/service/AuthServiceTest.java) L216-228:
+   - Cambiar `isInstanceOf(IllegalStateException.class)` → `isInstanceOf(SetupAlreadyCompletedException.class)`
+
+### Manual Verification (Postman/Browser)
+
+3. **Security Headers** — Con el backend corriendo:
+   - `GET http://localhost:8080/health`
+   - Verificar en response headers: `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Content-Security-Policy`
+
+4. **Logout endpoint** — En Postman:
+   - `POST http://localhost:8080/api/v1/auth/logout` con header `Authorization: Bearer <token>`
+   - Esperar `204 No Content`
+
+5. **Readiness probe** — Con Docker PostgreSQL corriendo:
+   - `GET http://localhost:8080/health/ready`
+   - Verificar que `database` dice `UP` en vez de `NOT_CONFIGURED`
+
+6. **Password policy** — En Postman:
+   - `POST /api/v1/auth/setup` con password `"12345678"` (sin complejidad)
+   - Esperar `400 Bad Request` con error de validación

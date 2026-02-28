@@ -138,7 +138,7 @@ class AuthControllerIT {
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(SETUP_JSON))
                                         .andExpect(status().isConflict())
-                                        .andExpect(jsonPath("$.title").value("Conflict"));
+                                        .andExpect(jsonPath("$.title").value("Setup Already Completed"));
                 }
 
                 @Test

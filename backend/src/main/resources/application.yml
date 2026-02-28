@@ -54,6 +54,10 @@ jwt:
   secret: ${JWT_SECRET:dGhlLXJlcGxpY2FudC1kZXYtc2VjcmV0LWtleS0yMDI2LWNoYW5nZS1pbi1wcm9kdWN0aW9uLTEyMzQ1Njc4OTA=}
   expiration-ms: ${JWT_EXPIRATION_MS:86400000}
 
+# CORS Configuration
+cors:
+  allowed-origins: ${CORS_ORIGINS:http://localhost:3000}
+
 # Logging
 logging:
   level:
