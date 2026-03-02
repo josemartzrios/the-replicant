@@ -1,3 +1,11 @@
+# Local login
+
+-  "email": "admin@thereplicant.com",
+-  "name": "Admin User",
+- "password": "SecurePassword123!"
+
+
+
 # Docker Commands - Local Development
 
 > Quick reference for managing the local PostgreSQL database with Docker.

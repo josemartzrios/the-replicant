@@ -3,6 +3,7 @@ package com.thereplicant.api.exception;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -46,6 +47,21 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Handle malformed JSON or type coercion errors.
+     * Triggered when Jackson rejects invalid types (e.g., number for string field).
+     */
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ProblemDetail handleMessageNotReadable(HttpMessageNotReadableException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.BAD_REQUEST,
+                "Invalid request body: check field types and JSON format");
+        problem.setTitle("Malformed Request");
+        problem.setType(URI.create("https://thereplicant.blog/errors/malformed-request"));
+
+        return problem;
+    }
+
+    /**
      * Handle authentication failures (invalid credentials).
      * OWASP: Always return the same generic message to prevent user enumeration.
      * The message is hardcoded here regardless of the actual exception detail
@@ -74,6 +90,48 @@ public class GlobalExceptionHandler {
                 ex.getMessage());
         problem.setTitle("Setup Already Completed");
         problem.setType(URI.create("https://thereplicant.blog/errors/setup-conflict"));
+
+        return problem;
+    }
+
+    /**
+     * Handle resource not found (404).
+     */
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ProblemDetail handleResourceNotFound(ResourceNotFoundException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.NOT_FOUND,
+                ex.getMessage());
+        problem.setTitle("Resource Not Found");
+        problem.setType(URI.create("https://thereplicant.blog/errors/not-found"));
+
+        return problem;
+    }
+
+    /**
+     * Handle duplicate resource conflict (409).
+     */
+    @ExceptionHandler(DuplicateResourceException.class)
+    public ProblemDetail handleDuplicateResource(DuplicateResourceException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.CONFLICT,
+                ex.getMessage());
+        problem.setTitle("Resource Conflict");
+        problem.setType(URI.create("https://thereplicant.blog/errors/conflict"));
+
+        return problem;
+    }
+
+    /**
+     * Handle illegal state (e.g., deleting category with posts).
+     */
+    @ExceptionHandler(IllegalStateException.class)
+    public ProblemDetail handleIllegalState(IllegalStateException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.CONFLICT,
+                ex.getMessage());
+        problem.setTitle("Operation Not Allowed");
+        problem.setType(URI.create("https://thereplicant.blog/errors/illegal-state"));
 
         return problem;
     }

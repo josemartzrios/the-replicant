@@ -72,6 +72,7 @@ public class SecurityConfig {
 
             // Public blog content (read-only)
             "/api/v1/posts",
+            "/api/v1/posts/search",
             "/api/v1/posts/{slug}",
             "/api/v1/categories",
             "/api/v1/tags",
