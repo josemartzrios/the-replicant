@@ -1,18 +1,21 @@
 package com.thereplicant.api.controller;
 
 import com.thereplicant.api.dto.auth.*;
+import com.thereplicant.api.entity.User;
 import com.thereplicant.api.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -23,10 +26,9 @@ import org.springframework.web.bind.annotation.*;
  * - POST /auth/setup - Create first admin (one-time only)
  * - POST /auth/login - Authenticate user
  * - POST /auth/refresh - Refresh access token
+ * - POST /auth/logout - Revoke all tokens (requires JWT)
  * 
- * All endpoints are public (no JWT required).
- * 
- *
+ * All endpoints are public except logout (requires valid JWT).
  */
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -89,5 +91,20 @@ public class AuthController {
     public ResponseEntity<AuthResponse> refresh(@Valid @RequestBody RefreshRequest request) {
         AuthResponse response = authService.refreshToken(request);
         return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Logout user by revoking all their refresh tokens.
+     * Requires valid JWT (protected endpoint).
+     */
+    @PostMapping("/logout")
+    @Operation(summary = "Logout user", description = "Revokes all refresh tokens for the authenticated user", security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Logout successful"),
+            @ApiResponse(responseCode = "401", description = "Not authenticated")
+    })
+    public ResponseEntity<Void> logout(@AuthenticationPrincipal User user) {
+        authService.logout(user);
+        return ResponseEntity.noContent().build();
     }
 }

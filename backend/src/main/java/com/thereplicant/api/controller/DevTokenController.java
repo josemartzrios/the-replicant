@@ -28,7 +28,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/test")
 @RequiredArgsConstructor
-@Profile("!prod") // Disabled in production
+@Profile("dev") // Only active when 'dev' profile is explicitly enabled
 public class DevTokenController {
 
     private final JwtService jwtService;

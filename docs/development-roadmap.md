@@ -4,8 +4,8 @@
 
 This document outlines the complete development roadmap for The Replicant MVP, from initial setup to deployment and iteration.
 
-> **Current Focus**: Step 6 - Basic Authentication (JWT)  
-> **Working Branch**: `feature/006-authentication`
+> **Current Focus**: Step 8 - Basic Frontend  
+> **Last Completed**: Step 7 - CRUD Posts (2026-03-02)
 
 ---
 
@@ -119,8 +119,9 @@ This document outlines the complete development roadmap for The Replicant MVP, f
 
 ---
 
-### 6. Basic Auth 🔄
-**Status**: 🔄 In Progress  
+### 6. Basic Auth ✅
+**Status**: ✅ Completed  
+**Completed**: 2026-02-13  
 **Branch**: `feature/006-authentication`  
 **Description**: Implement JWT-based authentication system
 
@@ -129,31 +130,45 @@ This document outlines the complete development roadmap for The Replicant MVP, f
 - [x] Implement JWT token generation/validation (`JwtService.java`)
 - [x] Add JWT authentication filter (`JwtAuthenticationFilter.java`)
 - [x] Add password encryption (BCrypt - strength 12)
-- [x] Create dev testing endpoint (`DevTokenController.java` - disabled in prod)
+- [x] Create dev testing endpoint (`DevTokenController.java` - dev profile only)
 - [x] Write Unit Tests for JwtService (8 test cases - ✅ all passing)
-- [ ] Create User entity and repository
-- [ ] Implement `/api/v1/auth/register` endpoint
-- [ ] Implement `/api/v1/auth/login` endpoint
-- [ ] Implement `/api/v1/auth/refresh` endpoint
-- [ ] Create user DTOs and validators
-- [ ] Write integration tests for auth endpoints (≥80% coverage)
+- [x] Create User entity, Role enum, and UserRepository
+- [x] Implement `/api/v1/auth/setup` endpoint (first admin)
+- [x] Implement `/api/v1/auth/login` endpoint
+- [x] Implement `/api/v1/auth/refresh` endpoint (token rotation)
+- [x] Implement `/api/v1/auth/logout` endpoint (revoke tokens)
+- [x] Create RefreshToken entity and repository
+- [x] Create auth DTOs and validators (SetupRequest, LoginRequest, etc.)
+- [x] Write AuthService unit tests (18 test cases)
+- [x] Write AuthController integration tests (15 test cases)
+- [x] Security audit remediation (OWASP headers, CORS, password policy, custom exceptions)
 
 ---
 
-### 7. CRUD Posts ⏳
-**Status**: ⏳ Pending  
-**Branch**: `feature/007-blog-crud` (create from `dev`)  
-**Description**: Implement complete blog post management system
+### 7. CRUD Posts ✅
+**Status**: ✅ Completed  
+**Completed**: 2026-03-02  
+**Branch**: `feature/007-blog-crud`  
+**Description**: Implement complete blog post management system (US-006 to US-009)
 
 **Tasks**:
-- [ ] Create Post, Category, Tag entities with JPA
-- [ ] Create repository interfaces
-- [ ] Implement PostService with CRUD operations
-- [ ] Create PostController with REST endpoints
-- [ ] Add input validation (Jakarta Validation)
-- [ ] Implement slug generation
-- [ ] Add pagination support
-- [ ] Write integration tests for CRUD operations
+- [x] Create Post, Category, Tag entities with JPA
+- [x] Create PostTag junction table (ManyToMany)
+- [x] Create repository interfaces (PostRepository, CategoryRepository, TagRepository)
+- [x] Implement PostService with CRUD operations
+- [x] Create PostController with REST endpoints (PATCH for partial update)
+- [x] Create blog DTOs (CreatePostRequest, UpdatePostRequest, PostResponse, etc.)
+- [x] Add input validation (Jakarta Validation + strict Jackson coercion)
+- [x] Implement slug generation (auto from title)
+- [x] Implement excerpt auto-generation (first 160 chars)
+- [x] Implement reading time calculation
+- [x] Add soft delete support (deletedAt)
+- [x] Add pagination support
+- [x] Implement CategoryController and TagController
+- [x] Configure SecurityConfig with method-specific public endpoints (GET only)
+- [x] Add exception handlers (404, 409, 405, malformed request)
+- [x] Write unit tests (67 tests passing)
+- [x] Smoke tests with Postman (full CRUD flow validated)
 
 ---
 
@@ -231,8 +246,8 @@ This document outlines the complete development roadmap for The Replicant MVP, f
 | 4 | API Contract | ✅ Done | 0 |
 | 5 | Infrastructure Setup | ✅ Done | 1 |
 | 5b | Frontend & CI Setup | ⏳ Parallel | 1-2 |
-| 6 | Basic Auth | 🔄 In Progress | 1 |
-| 7 | CRUD Posts | ⏳ Pending | 2 |
+| 6 | Basic Auth | ✅ Done | 1 |
+| 7 | CRUD Posts | 🔄 In Progress | 2 |
 | 8 | Basic Frontend | ⏳ Pending | 2 |
 | 9 | Deploy | ⏳ Pending | 3 |
 | 10 | MVP Iteration | ⏳ Pending | 3 |
@@ -276,17 +291,19 @@ See [branching-strategy.md](branching-strategy.md) for full workflow details.
 
 ## Next Action
 
-> **🎯 Current**: Continue Step 6 - Basic Authentication
+> **🎯 Current**: Step 7 - CRUD Posts (Blog Management)
 >
-> **Next Session Tasks**:
-> 1. Write Unit Tests for JwtService (6 test cases)
-> 2. Create User entity and repository
-> 3. Implement auth endpoints (register, login, refresh)
-> 4. Create user DTOs and validators
+> **Next Tasks**:
+> 1. Create Post, Category, Tag entities (based on `database-schema.md`)
+> 2. Create repository interfaces with custom queries
+> 3. Implement PostService (create, update, delete, list, getBySlug)
+> 4. Create PostController with REST endpoints
+> 5. Add DTOs, validation, slug generation, pagination
+> 6. Write unit + integration tests
 
 ---
 
-**Document Version**: 1.3  
+**Document Version**: 1.4  
 **Created**: 2026-01-13  
-**Last Updated**: 2026-02-05  
-**Next Review**: After Step 6 completion
+**Last Updated**: 2026-02-27  
+**Next Review**: After Step 7 completion

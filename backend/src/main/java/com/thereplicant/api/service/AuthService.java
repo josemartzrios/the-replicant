@@ -4,6 +4,7 @@ import com.thereplicant.api.dto.auth.*;
 import com.thereplicant.api.entity.RefreshToken;
 import com.thereplicant.api.entity.Role;
 import com.thereplicant.api.entity.User;
+import com.thereplicant.api.exception.SetupAlreadyCompletedException;
 import com.thereplicant.api.repository.RefreshTokenRepository;
 import com.thereplicant.api.repository.UserRepository;
 import com.thereplicant.api.security.JwtService;
@@ -74,7 +75,7 @@ public class AuthService {
     public AuthResponse setup(SetupRequest request) {
         // Validate: only works when no users exist
         if (userRepository.count() > 0) {
-            throw new IllegalStateException("Setup already completed. Admin user exists.");
+            throw new SetupAlreadyCompletedException();
         }
 
         // Create admin user
