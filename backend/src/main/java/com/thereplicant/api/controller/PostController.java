@@ -128,10 +128,10 @@ public class PostController {
     }
 
     /**
-     * Update an existing post.
+     * Partially update an existing post (PATCH — only provided fields are updated).
      * Requires authentication.
      */
-    @PutMapping("/{id}")
+    @PatchMapping("/{id}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Map<String, Object>> updatePost(
             @PathVariable UUID id,

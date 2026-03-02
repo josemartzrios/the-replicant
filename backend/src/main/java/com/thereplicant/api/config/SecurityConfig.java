@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -50,7 +51,7 @@ public class SecurityConfig {
     private String allowedOrigins;
 
     /**
-     * Public endpoints that don't require authentication.
+     * Endpoints accessible without authentication (any HTTP method).
      * Following OWASP: minimum necessary access.
      */
     private static final String[] PUBLIC_ENDPOINTS = {
@@ -70,15 +71,20 @@ public class SecurityConfig {
             "/api/v1/auth/login",
             "/api/v1/auth/refresh",
 
-            // Public blog content (read-only)
+            // Development testing (disabled in prod via @Profile)
+            "/api/test/**"
+    };
+
+    /**
+     * Blog content endpoints — public for GET only.
+     * POST/PATCH/DELETE to these paths require authentication.
+     */
+    private static final String[] PUBLIC_GET_ENDPOINTS = {
             "/api/v1/posts",
             "/api/v1/posts/search",
             "/api/v1/posts/{slug}",
             "/api/v1/categories",
-            "/api/v1/tags",
-
-            // Development testing (disabled in prod via @Profile)
-            "/api/test/**"
+            "/api/v1/tags"
     };
 
     /**
@@ -117,6 +123,7 @@ public class SecurityConfig {
                 // Configure endpoint authorization
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
+                        .requestMatchers(HttpMethod.GET, PUBLIC_GET_ENDPOINTS).permitAll()
                         .anyRequest().authenticated())
 
                 // Stateless session - no cookies, no server-side sessions

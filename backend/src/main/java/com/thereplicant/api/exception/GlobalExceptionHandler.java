@@ -62,6 +62,21 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Handle unsupported HTTP methods (e.g., PUT when only PATCH is mapped).
+     */
+    @ExceptionHandler(org.springframework.web.HttpRequestMethodNotSupportedException.class)
+    public ProblemDetail handleMethodNotSupported(
+            org.springframework.web.HttpRequestMethodNotSupportedException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.METHOD_NOT_ALLOWED,
+                "HTTP method '" + ex.getMethod() + "' is not supported for this endpoint");
+        problem.setTitle("Method Not Allowed");
+        problem.setType(URI.create("https://thereplicant.blog/errors/method-not-allowed"));
+
+        return problem;
+    }
+
+    /**
      * Handle authentication failures (invalid credentials).
      * OWASP: Always return the same generic message to prevent user enumeration.
      * The message is hardcoded here regardless of the actual exception detail
