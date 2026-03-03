@@ -1,5 +1,5 @@
 /**
- * Next.js Middleware — Server-side route protection.
+ * Next.js Proxy — Server-side route protection.
  *
  * Provides an early redirect for unauthenticated users trying to
  * access /admin/* routes. Checks for the presence of a token cookie/header.
@@ -14,15 +14,15 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
     const { pathname } = request.nextUrl;
 
     // Only protect /admin routes
     if (pathname.startsWith("/admin")) {
         // Check for token in cookie or Authorization header
-        // Since we use localStorage (MVP), the middleware can't see the token directly.
+        // Since we use localStorage (MVP), the proxy can't see the token directly.
         // The client-side AdminLayout handles the actual redirect.
-        // This middleware is a placeholder for future httpOnly cookie approach.
+        // This proxy is a placeholder for future httpOnly cookie approach.
         return NextResponse.next();
     }
 

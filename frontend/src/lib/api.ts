@@ -212,6 +212,10 @@ class ApiClient {
         return this.request<ApiResponse<CategoryDTO[]>>("/categories");
     }
 
+    async getAdminCategories(): Promise<ApiResponse<CategoryDTO[]>> {
+        return this.request<ApiResponse<CategoryDTO[]>>("/categories?includeAll=true");
+    }
+
     async createCategory(
         data: CreateCategoryRequest
     ): Promise<ApiResponse<CategoryDTO>> {

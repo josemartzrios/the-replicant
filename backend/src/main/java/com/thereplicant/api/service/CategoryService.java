@@ -45,6 +45,16 @@ public class CategoryService {
     }
 
     /**
+     * List all categories with ALL post counts (admin view — includes drafts).
+     */
+    @Transactional(readOnly = true)
+    public List<CategoryDTO> listAllAdmin() {
+        return categoryRepository.findAll().stream()
+                .map(this::toAdminDTO)
+                .collect(Collectors.toList());
+    }
+
+    /**
      * Create a new category.
      *
      * @throws DuplicateResourceException if a category with the same name exists
@@ -126,9 +136,27 @@ public class CategoryService {
     // Mapping
     // =========================================================================
 
+    /**
+     * Map to DTO with PUBLISHED post count (for public views).
+     */
     private CategoryDTO toDTO(Category category) {
         long postCount = postRepository.countByCategoryAndStatusAndDeletedAtIsNull(
                 category, PostStatus.PUBLISHED);
+
+        return CategoryDTO.builder()
+                .id(category.getId())
+                .name(category.getName())
+                .slug(category.getSlug())
+                .description(category.getDescription())
+                .postCount(postCount)
+                .build();
+    }
+
+    /**
+     * Map to DTO with ALL non-deleted post count (for admin views).
+     */
+    private CategoryDTO toAdminDTO(Category category) {
+        long postCount = postRepository.countByCategoryAndDeletedAtIsNull(category);
 
         return CategoryDTO.builder()
                 .id(category.getId())

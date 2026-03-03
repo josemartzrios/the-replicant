@@ -86,7 +86,7 @@ export interface CreatePostRequest {
     excerpt?: string;
     categoryId?: string;
     tags?: string[];
-    status: PostStatus;
+    status?: string;
 }
 
 export interface UpdatePostRequest {
@@ -95,7 +95,7 @@ export interface UpdatePostRequest {
     excerpt?: string;
     categoryId?: string;
     tags?: string[];
-    status?: PostStatus;
+    status?: string;
 }
 
 export interface CreateCategoryRequest {

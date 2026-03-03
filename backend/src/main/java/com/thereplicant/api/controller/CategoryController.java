@@ -40,11 +40,16 @@ public class CategoryController {
     private final CategoryService categoryService;
 
     /**
-     * List all categories with post counts (public).
+     * List all categories with post counts.
+     * Public: counts only published posts.
+     * Admin (includeAll=true): counts all non-deleted posts.
      */
     @GetMapping
-    public ResponseEntity<Map<String, Object>> listCategories() {
-        List<CategoryDTO> categories = categoryService.listAll();
+    public ResponseEntity<Map<String, Object>> listCategories(
+            @RequestParam(defaultValue = "false") boolean includeAll) {
+        List<CategoryDTO> categories = includeAll
+                ? categoryService.listAllAdmin()
+                : categoryService.listAll();
 
         Map<String, Object> response = new LinkedHashMap<>();
         response.put("data", categories);
