@@ -74,7 +74,10 @@ class ApiClient {
             }));
 
             // On 401, clear token and redirect to login
-            if (response.status === 401 && typeof window !== "undefined") {
+            // Skip redirect for auth endpoints (login, setup, etc.)
+            // so they can handle the error and show a message inline
+            const isAuthEndpoint = path.startsWith("/auth/");
+            if (response.status === 401 && !isAuthEndpoint && typeof window !== "undefined") {
                 localStorage.removeItem("accessToken");
                 localStorage.removeItem("refreshToken");
                 localStorage.removeItem("user");
