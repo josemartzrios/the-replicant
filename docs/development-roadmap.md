@@ -215,6 +215,7 @@ This document outlines the complete development roadmap for The Replicant MVP, f
 **Tasks**:
 - [ ] Self-test complete user flows
 - [ ] Fix critical bugs
+- [ ] Investigate and fix React Hydration TypeError (removeChild) caused by browser extensions in Admin layout during dev mode.
 - [ ] Optimize Core Web Vitals
 - [ ] Update documentation
 - [ ] Tag release v1.0.0

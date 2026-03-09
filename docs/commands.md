@@ -1,3 +1,9 @@
+# Start frontend
+
+- cd frontend
+- npm run dev
+
+
 # Local login
 
 -  "email": "admin@thereplicant.com",
