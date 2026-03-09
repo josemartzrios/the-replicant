@@ -4,8 +4,8 @@
 
 This document outlines the complete development roadmap for The Replicant MVP, from initial setup to deployment and iteration.
 
-> **Current Focus**: Step 8 - Basic Frontend  
-> **Last Completed**: Step 7 - CRUD Posts (2026-03-02)
+> **Current Focus**: Step 9 - Deploy  
+> **Last Completed**: Step 11 - Narrative Implementation (2026-03-09)
 
 ---
 
@@ -172,21 +172,21 @@ This document outlines the complete development roadmap for The Replicant MVP, f
 
 ---
 
-### 8. Basic Frontend ⏳
-**Status**: ⏳ Pending  
-**Branch**: `feature/008-frontend-mvp` (create from `dev`)  
+### 8. Basic Frontend ✅
+**Status**: ✅ Completed  
+**Branch**: `feature/008-frontend-mvp`  
 **Description**: Implement core frontend functionality
 
 **Tasks**:
-- [ ] Generate API client from OpenAPI spec
-- [ ] Implement login page (admin only)
-- [ ] Create homepage with post listing (SSG)
-- [ ] Implement post detail page (SSG + ISR)
-- [ ] Create admin dashboard for CRUD
-- [ ] Add markdown renderer (react-markdown)
-- [ ] Implement responsive design (mobile-first)
-- [ ] Add loading states and error handling
-- [ ] Implement SEO meta tags
+- [x] Generate API client from OpenAPI spec
+- [x] Implement login page (admin only)
+- [x] Create homepage with post listing (SSG)
+- [x] Implement post detail page (SSG + ISR)
+- [x] Create admin dashboard for CRUD
+- [x] Add markdown renderer (react-markdown)
+- [x] Implement responsive design (mobile-first)
+- [x] Add loading states and error handling
+- [x] Implement SEO meta tags
 
 ---
 
@@ -223,16 +223,16 @@ This document outlines the complete development roadmap for The Replicant MVP, f
 
 ---
 
-### 11. Narrative Implementation ⏳
-**Status**: ⏳ Pending  
+### 11. Narrative Implementation ✅
+**Status**: ✅ Completed  
 **Description**: Integrar el sistema de lore y ARG según el Epic 005.
 
 **Tasks**:
-- [ ] Implement Narrative Phase Manager
-- [ ] Add hidden metadata and comments
-- [ ] Create custom narrative 404
-- [ ] Implement console easter eggs
-- [ ] Deploy Fase 1 seeds
+- [x] Implement Narrative Phase Manager
+- [x] Add hidden metadata and comments
+- [x] Create custom narrative 404
+- [x] Implement console easter eggs
+- [x] Deploy Fase 1 seeds
 
 ---
 
@@ -249,10 +249,10 @@ This document outlines the complete development roadmap for The Replicant MVP, f
 | 5b | Frontend & CI Setup | ⏳ Parallel | 1-2 |
 | 6 | Basic Auth | ✅ Done | 1 |
 | 7 | CRUD Posts | 🔄 In Progress | 2 |
-| 8 | Basic Frontend | ⏳ Pending | 2 |
+| 8 | Basic Frontend | ✅ Done | 2 |
 | 9 | Deploy | ⏳ Pending | 3 |
 | 10 | MVP Iteration | ⏳ Pending | 3 |
-| 11 | Narrative Implementation | ⏳ Pending | Post-MVP |
+| 11 | Narrative Implementation | ✅ Done | Post-MVP |
 
 ---
 
@@ -292,15 +292,14 @@ See [branching-strategy.md](branching-strategy.md) for full workflow details.
 
 ## Next Action
 
-> **🎯 Current**: Step 7 - CRUD Posts (Blog Management)
+> **🎯 Current**: Step 9 - Deploy
 >
 > **Next Tasks**:
-> 1. Create Post, Category, Tag entities (based on `database-schema.md`)
-> 2. Create repository interfaces with custom queries
-> 3. Implement PostService (create, update, delete, list, getBySlug)
-> 4. Create PostController with REST endpoints
-> 5. Add DTOs, validation, slug generation, pagination
-> 6. Write unit + integration tests
+> 1. Configure production environments (Railway/Supabase for Backend, Vercel for Frontend)
+> 2. Document environment variables for CI/CD
+> 3. Implement basic health checks
+> 4. Run automated deployments
+> 5. Create PR from `dev` to `qa` for the test environment.
 
 ---
 
