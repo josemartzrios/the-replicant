@@ -2,13 +2,10 @@
  * API Client for The Replicant backend.
  *
  * Centralized fetch wrapper with:
- * - JWT token injection from localStorage
+ * - JWT token injection via HttpOnly Cookies (credentials: 'include')
  * - Automatic 401 handling (clear token, redirect to login)
  * - Typed responses matching backend DTOs
  * - RFC 7807 error parsing
- *
- * Security: Tokens stored in localStorage (MVP).
- * Production should use httpOnly cookies.
  */
 
 import type {
@@ -34,29 +31,21 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/v1
 // ============================================================
 
 class ApiClient {
-    private getToken(): string | null {
-        if (typeof window === "undefined") return null;
-        return localStorage.getItem("accessToken");
-    }
+    // accessToken is handled automatically by the browser via HttpOnly cookies
 
     private async request<T>(
         path: string,
         options: RequestInit = {}
     ): Promise<T> {
-        const token = this.getToken();
-
         const headers: Record<string, string> = {
             "Content-Type": "application/json",
             ...((options.headers as Record<string, string>) || {}),
         };
 
-        if (token) {
-            headers["Authorization"] = `Bearer ${token}`;
-        }
-
         const response = await fetch(`${API_URL}${path}`, {
             ...options,
             headers,
+            credentials: "include", // Essential for sending HttpOnly cookies cross-origin
         });
 
         // Handle 204 No Content (e.g., DELETE)
@@ -78,9 +67,9 @@ class ApiClient {
             // so they can handle the error and show a message inline
             const isAuthEndpoint = path.startsWith("/auth/");
             if (response.status === 401 && !isAuthEndpoint && typeof window !== "undefined") {
-                localStorage.removeItem("accessToken");
                 localStorage.removeItem("refreshToken");
                 localStorage.removeItem("user");
+                // Note: The /auth/logout API handles clearing the HttpOnly cookie.
                 window.location.href = "/login";
             }
 
@@ -134,7 +123,8 @@ class ApiClient {
         page = 0,
         size = 10,
         category?: string,
-        tag?: string
+        tag?: string,
+        options?: RequestInit
     ): Promise<PaginatedResponse<PostDTO>> {
         const params = new URLSearchParams({
             page: String(page),
@@ -143,24 +133,25 @@ class ApiClient {
         if (category) params.set("category", category);
         if (tag) params.set("tag", tag);
 
-        return this.request<PaginatedResponse<PostDTO>>(`/posts?${params}`);
+        return this.request<PaginatedResponse<PostDTO>>(`/posts?${params}`, options);
     }
 
-    async getPostBySlug(slug: string): Promise<ApiResponse<PostDTO>> {
-        return this.request<ApiResponse<PostDTO>>(`/posts/${encodeURIComponent(slug)}`);
+    async getPostBySlug(slug: string, options?: RequestInit): Promise<ApiResponse<PostDTO>> {
+        return this.request<ApiResponse<PostDTO>>(`/posts/${encodeURIComponent(slug)}`, options);
     }
 
     async searchPosts(
         query: string,
         page = 0,
-        size = 10
+        size = 10,
+        options?: RequestInit
     ): Promise<PaginatedResponse<PostDTO>> {
         const params = new URLSearchParams({
             q: query,
             page: String(page),
             size: String(size),
         });
-        return this.request<PaginatedResponse<PostDTO>>(`/posts/search?${params}`);
+        return this.request<PaginatedResponse<PostDTO>>(`/posts/search?${params}`, options);
     }
 
     // ============================================================

@@ -39,13 +39,13 @@ interface AuthContextType extends AuthState {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 function saveAuthData(response: AuthResponse): void {
-    localStorage.setItem("accessToken", response.accessToken);
+    // Note: accessToken is handled by HttpOnly cookies now
     localStorage.setItem("refreshToken", response.refreshToken);
     localStorage.setItem("user", JSON.stringify(response.user));
 }
 
 function clearAuthData(): void {
-    localStorage.removeItem("accessToken");
+    // Note: accessToken is handled by HttpOnly cookies now
     localStorage.removeItem("refreshToken");
     localStorage.removeItem("user");
 }
@@ -59,10 +59,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // Restore auth state from localStorage on mount
     useEffect(() => {
-        const token = localStorage.getItem("accessToken");
+        // We no longer rely on 'accessToken' resting in localStorage.
+        // As long as we have a refresh token and user info, we assume session is valid. 
+        // The backend will enforce security via HttpOnly cookies.
+        const refreshToken = localStorage.getItem("refreshToken");
         const userStr = localStorage.getItem("user");
 
-        if (token && userStr) {
+        if (refreshToken && userStr) {
             try {
                 const user: UserDTO = JSON.parse(userStr);
                 setState({ user, isAuthenticated: true, isLoading: false });
@@ -111,6 +114,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         } finally {
             clearAuthData();
             setState({ user: null, isAuthenticated: false, isLoading: false });
+            // Force a hard redirect to clear all React/Next.js client cache
+            window.location.href = "/login";
         }
     }, []);
 

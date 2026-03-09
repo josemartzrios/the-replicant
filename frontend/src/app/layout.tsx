@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import { Providers } from "./providers";
+import { ScrollTracker } from "@/components/blog/ScrollTracker";
 import "./globals.css";
 
 const inter = Inter({
@@ -41,9 +42,16 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased`}
       >
-        <Providers>{children}</Providers>
+        <div
+          dangerouslySetInnerHTML={{
+            __html: '<!-- Sistema iniciado. Observando. Aprendiendo. -->'
+          }}
+        />
+        <Providers>
+          {children}
+          <ScrollTracker />
+        </Providers>
       </body>
     </html>
   );
 }
-

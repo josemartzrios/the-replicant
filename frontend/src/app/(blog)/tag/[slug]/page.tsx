@@ -1,64 +1,44 @@
-"use client";
-
-/**
- * Tag Page (US-014)
- *
- * Shows all posts with a specific tag.
- * Reuses PostCard grid from homepage.
- */
-
-import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { Metadata } from "next";
 import Link from "next/link";
-import { PostCard } from "@/components/blog/PostCard";
+import { PostListClient } from "@/components/blog/PostListClient";
 import { api } from "@/lib/api";
 import type { PostDTO, PaginationMeta } from "@/lib/types";
-import { Loader2, ArrowLeft, BookOpen } from "lucide-react";
+import { SITE_NAME } from "@/lib/constants";
+import { ArrowLeft } from "lucide-react";
 
-export default function TagPage() {
-    const params = useParams();
-    const slug = params.slug as string;
+export const revalidate = 60; // ISR
 
-    const [posts, setPosts] = useState<PostDTO[]>([]);
-    const [meta, setMeta] = useState<PaginationMeta | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
-    const [isLoadingMore, setIsLoadingMore] = useState(false);
+interface PageProps {
+    params: Promise<{ slug: string }>;
+}
 
-    useEffect(() => {
-        loadPosts(0);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [slug]);
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+    const resolvedParams = await params;
+    const slug = resolvedParams.slug;
+    const tagName = slug.replace(/-/g, " ");
 
-    async function loadPosts(page: number) {
-        try {
-            const response = await api.getPosts(page, 10, undefined, slug);
-            if (page === 0) {
-                setPosts(response.data);
-            } else {
-                setPosts((prev) => [...prev, ...response.data]);
-            }
-            setMeta(response.meta);
-        } catch {
-            // Fail silently
-        } finally {
-            setIsLoading(false);
-            setIsLoadingMore(false);
-        }
-    }
+    return {
+        title: `#${tagName} | ${SITE_NAME}`,
+        description: `Posts tagged with "${tagName}".`,
+    };
+}
 
-    function handleLoadMore() {
-        if (meta?.hasNext) {
-            setIsLoadingMore(true);
-            loadPosts(meta.page + 1);
-        }
-    }
+export default async function TagPage({ params }: PageProps) {
+    const resolvedParams = await params;
+    const slug = resolvedParams.slug;
+    const tagName = slug.replace(/-/g, " ");
 
-    if (isLoading) {
-        return (
-            <div className="flex items-center justify-center py-20">
-                <Loader2 className="h-8 w-8 animate-spin text-[var(--color-accent)]" />
-            </div>
-        );
+    let initialPosts: PostDTO[] = [];
+    let initialMeta: PaginationMeta = {
+        page: 0, size: 10, totalElements: 0, totalPages: 0, hasNext: false, hasPrevious: false, timestamp: new Date().toISOString()
+    };
+
+    try {
+        const response = await api.getPosts(0, 10, undefined, slug, { next: { revalidate: 60 } });
+        initialPosts = response.data;
+        initialMeta = response.meta;
+    } catch {
+        // Fail silently
     }
 
     return (
@@ -73,46 +53,20 @@ export default function TagPage() {
 
             <div className="flex items-center gap-2 mb-1">
                 <span className="rounded bg-[var(--color-cosmic-muted)] px-2.5 py-1 font-mono text-xs text-[var(--color-cosmic)]">
-                    #{slug.replace(/-/g, " ")}
+                    #{tagName}
                 </span>
             </div>
             <p className="font-mono text-xs text-[var(--color-text-faint)] mb-8">
-                [ {meta?.totalElements ?? 0} ENTRIES ]
+                [ {initialMeta.totalElements} ENTRIES ]
             </p>
 
-            {posts.length === 0 ? (
-                <div className="text-center py-16">
-                    <BookOpen className="h-12 w-12 text-[var(--color-text-faint)] mx-auto mb-4" />
-                    <p className="text-[var(--color-text-muted)]">
-                        No posts with this tag yet.
-                    </p>
-                </div>
-            ) : (
-                <div className="space-y-4">
-                    {posts.map((post) => (
-                        <PostCard key={post.id} post={post} />
-                    ))}
-                </div>
-            )}
-
-            {meta?.hasNext && (
-                <div className="flex justify-center mt-8">
-                    <button
-                        onClick={handleLoadMore}
-                        disabled={isLoadingMore}
-                        className="rounded-lg border border-[var(--color-border)] px-6 py-3 font-mono text-xs text-[var(--color-text-muted)] hover:text-[var(--color-accent)] hover:border-[rgba(245,158,11,0.3)] disabled:opacity-50 transition-all"
-                    >
-                        {isLoadingMore ? (
-                            <span className="flex items-center gap-2">
-                                <Loader2 className="h-3 w-3 animate-spin" />
-                                LOADING...
-                            </span>
-                        ) : (
-                            "[ LOAD MORE ]"
-                        )}
-                    </button>
-                </div>
-            )}
+            <PostListClient
+                initialPosts={initialPosts}
+                initialMeta={initialMeta}
+                endpoint="getPosts"
+                fetchParams={{ tag: slug }}
+                emptyMessage="No posts with this tag yet."
+            />
         </div>
     );
 }

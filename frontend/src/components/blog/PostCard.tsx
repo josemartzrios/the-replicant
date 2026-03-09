@@ -51,7 +51,7 @@ export function PostCard({ post }: PostCardProps) {
                 </p>
 
                 {/* Footer: Date + Tags */}
-                <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center justify-between gap-3 flex-wrap">
                     <span className="flex items-center gap-1.5 font-mono text-xs text-[var(--color-text-faint)]">
                         <Calendar className="h-3 w-3" />
                         {publishedDate}

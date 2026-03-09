@@ -6,8 +6,13 @@
  */
 
 import { AuthProvider } from "@/lib/auth";
+import { NarrativeProvider } from "@/components/providers/NarrativeProvider";
 import type { ReactNode } from "react";
 
 export function Providers({ children }: { children: ReactNode }) {
-  return <AuthProvider>{children}</AuthProvider>;
+  return (
+    <NarrativeProvider>
+      <AuthProvider>{children}</AuthProvider>
+    </NarrativeProvider>
+  );
 }

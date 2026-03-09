@@ -15,6 +15,7 @@ import { useAuth } from "@/lib/auth";
 import { api } from "@/lib/api";
 import type { ApiError } from "@/lib/types";
 import { Eye, EyeOff, Loader2, AlertCircle } from "lucide-react";
+import { Skeleton } from "@/components/ui/Skeleton";
 
 export default function LoginPage() {
     const router = useRouter();
@@ -70,7 +71,26 @@ export default function LoginPage() {
         }
     }
 
-    if (authLoading || isCheckingStatus || isAuthenticated) {
+    if (isCheckingStatus) {
+        return (
+            <div className="min-h-screen flex items-center justify-center p-4">
+                <div className="w-full max-w-md p-8 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border)]">
+                    <div className="flex flex-col items-center mb-8">
+                        <Skeleton className="h-8 w-8 mb-4 rounded-full" />
+                        <Skeleton className="h-6 w-1/2 mb-1" />
+                        <Skeleton className="h-4 w-3/4" />
+                    </div>
+                    <div className="space-y-4">
+                        <Skeleton className="h-10 w-full rounded-lg" />
+                        <Skeleton className="h-10 w-full rounded-lg" />
+                    </div>
+                    <Skeleton className="h-12 w-full rounded-lg mt-8" />
+                </div>
+            </div>
+        );
+    }
+
+    if (authLoading) {
         return (
             <div className="flex min-h-screen items-center justify-center">
                 <Loader2 className="h-8 w-8 animate-spin text-[var(--color-accent)]" />

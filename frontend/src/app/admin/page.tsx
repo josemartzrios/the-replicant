@@ -15,15 +15,18 @@ import Link from "next/link";
 import { api } from "@/lib/api";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { Toast } from "@/components/ui/Toast";
+import { useSEO } from "@/hooks/useSEO";
 import type { PostDTO, PaginationMeta } from "@/lib/types";
 import {
     Plus,
     Pencil,
     Trash2,
-    Loader2,
     FileText,
     FolderOpen,
+    ChevronLeft,
+    ChevronRight,
 } from "lucide-react";
+import { SkeletonTable } from "@/components/ui/Skeleton";
 
 type PostStatus = "all" | "DRAFT" | "PUBLISHED";
 
@@ -32,6 +35,8 @@ export default function AdminDashboard() {
     const [meta, setMeta] = useState<PaginationMeta | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [statusFilter, setStatusFilter] = useState<PostStatus>("all");
+
+    useSEO({ title: "Admin — Posts", noindex: true });
 
     // Delete state
     const [deleteTarget, setDeleteTarget] = useState<PostDTO | null>(null);
@@ -48,7 +53,7 @@ export default function AdminDashboard() {
             setIsLoading(true);
             try {
                 const status = statusFilter === "all" ? undefined : statusFilter;
-                const response = await api.getAdminPosts(page, 20, status);
+                const response = await api.getAdminPosts(page, 10, status);
                 setPosts(response.data);
                 setMeta(response.meta);
             } catch {
@@ -86,26 +91,28 @@ export default function AdminDashboard() {
     ];
 
     return (
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-5xl mx-auto" suppressHydrationWarning>
             {/* Header */}
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight">Posts</h1>
                     <p className="font-mono text-xs text-[var(--color-text-faint)]">
                         [ {meta?.totalElements ?? 0} ENTRIES ]
                     </p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 sm:gap-3">
                     <Link
                         href="/admin/categories"
-                        className="flex items-center gap-2 rounded-lg border border-[var(--color-border)] px-4 py-2.5 font-mono text-xs text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:border-[var(--color-accent)] transition-colors"
+                        suppressHydrationWarning
+                        className="flex items-center gap-2 rounded-lg border border-[var(--color-border)] px-3 sm:px-4 py-2.5 font-mono text-xs text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:border-[var(--color-accent)] transition-colors"
                     >
                         <FolderOpen className="h-4 w-4" />
-                        Categories
+                        <span className="hidden sm:inline">Categories</span>
                     </Link>
                     <Link
                         href="/admin/posts/new"
-                        className="flex items-center gap-2 rounded-lg bg-[var(--color-accent)] px-4 py-2.5 font-mono text-xs font-semibold text-[var(--color-void)] hover:bg-[var(--color-accent-hover)] transition-colors"
+                        suppressHydrationWarning
+                        className="flex items-center gap-2 rounded-lg bg-[var(--color-accent)] px-3 sm:px-4 py-2.5 font-mono text-xs font-semibold text-[var(--color-void)] hover:bg-[var(--color-accent-hover)] transition-colors"
                     >
                         <Plus className="h-4 w-4" />
                         NEW POST
@@ -120,8 +127,8 @@ export default function AdminDashboard() {
                         key={value}
                         onClick={() => setStatusFilter(value)}
                         className={`rounded-lg px-4 py-2 font-mono text-xs transition-colors ${statusFilter === value
-                                ? "bg-[var(--color-accent-muted)] text-[var(--color-accent)]"
-                                : "text-[var(--color-text-muted)] hover:bg-[var(--color-surface-hover)]"
+                            ? "bg-[var(--color-accent-muted)] text-[var(--color-accent)]"
+                            : "text-[var(--color-text-muted)] hover:bg-[var(--color-surface-hover)]"
                             }`}
                     >
                         {label}
@@ -131,8 +138,10 @@ export default function AdminDashboard() {
 
             {/* Table */}
             {isLoading ? (
-                <div className="flex items-center justify-center py-20">
-                    <Loader2 className="h-6 w-6 animate-spin text-[var(--color-accent)]" />
+                <div className="pt-24 pb-12">
+                    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <SkeletonTable rows={10} className="mt-8" />
+                    </div>
                 </div>
             ) : posts.length === 0 ? (
                 <div className="text-center py-20">
@@ -147,8 +156,8 @@ export default function AdminDashboard() {
                     </Link>
                 </div>
             ) : (
-                <div className="rounded-xl border border-[var(--color-border)] overflow-hidden">
-                    <table className="w-full text-sm">
+                <div className="rounded-xl border border-[var(--color-border)] overflow-x-auto">
+                    <table className="w-full text-sm min-w-[500px]">
                         <thead>
                             <tr className="border-b border-[var(--color-border)] bg-[var(--color-surface)]">
                                 <th className="text-left px-4 py-3 font-mono text-[10px] text-[var(--color-text-faint)] uppercase tracking-wider">
@@ -180,8 +189,8 @@ export default function AdminDashboard() {
                                     <td className="px-4 py-3 hidden sm:table-cell">
                                         <span
                                             className={`inline-block rounded px-2 py-0.5 font-mono text-[10px] uppercase ${post.status === "PUBLISHED"
-                                                    ? "bg-emerald-500/10 text-emerald-400"
-                                                    : "bg-yellow-500/10 text-yellow-400"
+                                                ? "bg-emerald-500/10 text-emerald-400"
+                                                : "bg-yellow-500/10 text-yellow-400"
                                                 }`}
                                         >
                                             {post.status}
@@ -202,6 +211,7 @@ export default function AdminDashboard() {
                                         <div className="flex items-center justify-end gap-1">
                                             <Link
                                                 href={`/admin/posts/${post.id}/edit`}
+                                                suppressHydrationWarning
                                                 className="rounded p-2 text-[var(--color-text-faint)] hover:text-[var(--color-accent)] hover:bg-[var(--color-accent-muted)] transition-colors"
                                                 aria-label={`Edit ${post.title}`}
                                             >
@@ -225,19 +235,35 @@ export default function AdminDashboard() {
 
             {/* Pagination */}
             {meta && meta.totalPages > 1 && (
-                <div className="flex justify-center gap-2 mt-6">
+                <div className="flex items-center justify-center gap-1 mt-6">
+                    <button
+                        onClick={() => loadPosts(meta.page - 1)}
+                        disabled={!meta.hasPrevious}
+                        className="rounded p-2 font-mono text-xs text-[var(--color-text-muted)] hover:bg-[var(--color-surface-hover)] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                        aria-label="Previous page"
+                    >
+                        <ChevronLeft className="h-4 w-4" />
+                    </button>
                     {Array.from({ length: meta.totalPages }, (_, i) => (
                         <button
                             key={i}
                             onClick={() => loadPosts(i)}
                             className={`rounded px-3 py-1.5 font-mono text-xs transition-colors ${meta.page === i
-                                    ? "bg-[var(--color-accent-muted)] text-[var(--color-accent)]"
-                                    : "text-[var(--color-text-muted)] hover:bg-[var(--color-surface-hover)]"
+                                ? "bg-[var(--color-accent-muted)] text-[var(--color-accent)]"
+                                : "text-[var(--color-text-muted)] hover:bg-[var(--color-surface-hover)]"
                                 }`}
                         >
                             {i + 1}
                         </button>
                     ))}
+                    <button
+                        onClick={() => loadPosts(meta.page + 1)}
+                        disabled={!meta.hasNext}
+                        className="rounded p-2 font-mono text-xs text-[var(--color-text-muted)] hover:bg-[var(--color-surface-hover)] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                        aria-label="Next page"
+                    >
+                        <ChevronRight className="h-4 w-4" />
+                    </button>
                 </div>
             )}
 

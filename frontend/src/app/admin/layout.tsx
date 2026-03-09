@@ -1,4 +1,5 @@
 "use client";
+import React, { useState, useEffect } from "react";
 
 /**
  * Admin Layout
@@ -9,11 +10,10 @@
  * - Loading state while checking auth
  */
 
-import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth";
 import { AdminHeader } from "@/components/layout/AdminHeader";
-import { Loader2 } from "lucide-react";
+import { Skeleton } from "@/components/ui/Skeleton";
 
 export default function AdminLayout({
     children,
@@ -29,22 +29,18 @@ export default function AdminLayout({
         }
     }, [isAuthenticated, isLoading, router]);
 
-    if (isLoading) {
-        return (
-            <div className="flex min-h-screen items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-[var(--color-accent)]" />
-            </div>
-        );
-    }
-
-    if (!isAuthenticated) {
-        return null;
-    }
+    // Simple fade-in effect to prevent raw flash without destroying the DOM tree
+    const [mounted, setMounted] = useState(false);
+    useEffect(() => setMounted(true), []);
 
     return (
-        <div className="min-h-screen">
-            <AdminHeader />
-            <main className="p-4 sm:p-6">{children}</main>
+        <div suppressHydrationWarning className={`min-h-screen transition-opacity duration-300 ${!mounted || isLoading ? "opacity-0" : "opacity-100"}`}>
+            {mounted && isAuthenticated && (
+                <>
+                    <AdminHeader />
+                    <main className="p-4 sm:p-6">{children}</main>
+                </>
+            )}
         </div>
     );
 }

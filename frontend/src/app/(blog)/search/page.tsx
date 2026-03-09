@@ -1,52 +1,46 @@
-"use client";
-
-/**
- * Search Page (US-012)
- *
- * Search posts by keyword with debounced input.
- * Shows results with post cards or a friendly empty state.
- */
-
-import { useState, useEffect, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { Metadata } from "next";
 import Link from "next/link";
-import { PostCard } from "@/components/blog/PostCard";
 import { SearchBar } from "@/components/blog/SearchBar";
+import { PostListClient } from "@/components/blog/PostListClient";
 import { api } from "@/lib/api";
-import type { PostDTO } from "@/lib/types";
-import { Loader2, SearchX, FolderOpen } from "lucide-react";
+import type { PostDTO, PaginationMeta } from "@/lib/types";
+import { SITE_NAME } from "@/lib/constants";
+import { SearchX, FolderOpen } from "lucide-react";
 
-function SearchContent() {
-    const searchParams = useSearchParams();
-    const query = searchParams.get("q") || "";
+interface PageProps {
+    searchParams: Promise<{ q?: string }>;
+}
 
-    const [posts, setPosts] = useState<PostDTO[]>([]);
-    const [isLoading, setIsLoading] = useState(false);
-    const [hasSearched, setHasSearched] = useState(false);
+export async function generateMetadata({ searchParams }: PageProps): Promise<Metadata> {
+    const resolvedParams = await searchParams;
+    const query = resolvedParams.q || "";
+    return {
+        title: query ? `Search: ${query} | ${SITE_NAME}` : `Search | ${SITE_NAME}`,
+        description: "Search for articles on The Replicant blog.",
+        robots: "noindex, nofollow", // Prevents indexing of infinite search permutations
+    };
+}
 
-    useEffect(() => {
-        async function search() {
-            if (query.length < 2) {
-                setPosts([]);
-                setHasSearched(false);
-                return;
-            }
+export default async function SearchPage({ searchParams }: PageProps) {
+    const resolvedParams = await searchParams;
+    const query = resolvedParams.q || "";
 
-            setIsLoading(true);
-            try {
-                const response = await api.searchPosts(query);
-                setPosts(response.data);
-                setHasSearched(true);
-            } catch {
-                setPosts([]);
-                setHasSearched(true);
-            } finally {
-                setIsLoading(false);
-            }
+    let initialPosts: PostDTO[] = [];
+    let initialMeta: PaginationMeta = { page: 0, size: 10, totalElements: 0, totalPages: 0, hasNext: false, hasPrevious: false, timestamp: new Date().toISOString() };
+
+    // Only search if query >= 2 chars
+    const hasSearched = query.length >= 2;
+
+    if (hasSearched) {
+        try {
+            // We use no-store for Search as it is highly dynamic
+            const response = await api.searchPosts(query, 0, 10, { cache: "no-store" });
+            initialPosts = response.data;
+            initialMeta = response.meta;
+        } catch {
+            // Fail silently
         }
-
-        search();
-    }, [query]);
+    }
 
     return (
         <div className="max-w-2xl mx-auto">
@@ -57,29 +51,23 @@ function SearchContent() {
 
             <SearchBar initialQuery={query} className="mb-8" />
 
-            {/* Loading */}
-            {isLoading && (
-                <div className="flex items-center justify-center py-16">
-                    <Loader2 className="h-6 w-6 animate-spin text-[var(--color-accent)]" />
-                </div>
-            )}
-
             {/* Results */}
-            {!isLoading && hasSearched && posts.length > 0 && (
+            {hasSearched && initialPosts.length > 0 && (
                 <>
                     <p className="font-mono text-xs text-[var(--color-text-faint)] mb-4">
-                        {posts.length} result{posts.length !== 1 ? "s" : ""} for &quot;{query}&quot;
+                        {initialMeta.totalElements} result{initialMeta.totalElements !== 1 ? "s" : ""} for &quot;{query}&quot;
                     </p>
-                    <div className="space-y-4">
-                        {posts.map((post) => (
-                            <PostCard key={post.id} post={post} />
-                        ))}
-                    </div>
+                    <PostListClient
+                        initialPosts={initialPosts}
+                        initialMeta={initialMeta}
+                        endpoint="searchPosts"
+                        fetchParams={{ query }}
+                    />
                 </>
             )}
 
             {/* No Results */}
-            {!isLoading && hasSearched && posts.length === 0 && (
+            {hasSearched && initialPosts.length === 0 && (
                 <div className="text-center py-16">
                     <SearchX className="h-12 w-12 text-[var(--color-text-faint)] mx-auto mb-4" />
                     <p className="text-[var(--color-text-muted)] mb-2">
@@ -99,7 +87,7 @@ function SearchContent() {
             )}
 
             {/* Initial State */}
-            {!isLoading && !hasSearched && (
+            {!hasSearched && (
                 <div className="text-center py-16">
                     <p className="text-sm text-[var(--color-text-faint)]">
                         Type at least 2 characters to search
@@ -107,19 +95,5 @@ function SearchContent() {
                 </div>
             )}
         </div>
-    );
-}
-
-export default function SearchPage() {
-    return (
-        <Suspense
-            fallback={
-                <div className="flex items-center justify-center py-20">
-                    <Loader2 className="h-8 w-8 animate-spin text-[var(--color-accent)]" />
-                </div>
-            }
-        >
-            <SearchContent />
-        </Suspense>
     );
 }

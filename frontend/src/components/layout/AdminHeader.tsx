@@ -19,7 +19,6 @@ export function AdminHeader() {
 
     async function handleLogout() {
         await logout();
-        router.push("/login");
     }
 
     return (
@@ -39,7 +38,7 @@ export function AdminHeader() {
                 {/* User + Logout */}
                 <div className="flex items-center gap-4">
                     {user && (
-                        <span className="font-mono text-xs text-[var(--color-text-muted)]">
+                        <span className="font-mono text-xs text-[var(--color-text-muted)] hidden sm:inline">
                             {user.name}
                             <span className="ml-2 rounded bg-[var(--color-accent-muted)] px-1.5 py-0.5 text-[var(--color-accent)] text-[10px] uppercase">
                                 {user.role}

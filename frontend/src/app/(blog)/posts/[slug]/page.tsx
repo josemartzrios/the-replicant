@@ -1,22 +1,10 @@
-"use client";
-
-/**
- * Post Detail Page (US-011)
- *
- * Full article reading view with:
- * - Title, author, date, category, tags, reading time
- * - Markdown content rendered with syntax highlighting
- * - "Back to posts" link
- */
-
-import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { Metadata } from "next";
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import { api } from "@/lib/api";
 import { MarkdownRenderer } from "@/components/blog/MarkdownRenderer";
-import type { PostDTO } from "@/lib/types";
+import { SITE_NAME, BASE_URL } from "@/lib/constants";
 import {
-    Loader2,
     ArrowLeft,
     Calendar,
     Clock,
@@ -24,49 +12,45 @@ import {
     Tag,
 } from "lucide-react";
 
-export default function PostDetailPage() {
-    const params = useParams();
-    const slug = params.slug as string;
+// ISR revalidation for posts (60 seconds)
+export const revalidate = 60;
 
-    const [post, setPost] = useState<PostDTO | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState("");
+interface PageProps {
+    params: Promise<{ slug: string }>;
+}
 
-    useEffect(() => {
-        async function loadPost() {
-            try {
-                const response = await api.getPostBySlug(slug);
-                setPost(response.data);
-            } catch {
-                setError("Post not found.");
-            } finally {
-                setIsLoading(false);
-            }
-        }
-        if (slug) loadPost();
-    }, [slug]);
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+    try {
+        const resolvedParams = await params;
+        const response = await api.getPostBySlug(resolvedParams.slug, { next: { revalidate: 60 } });
+        const post = response.data;
 
-    if (isLoading) {
-        return (
-            <div className="flex items-center justify-center py-20">
-                <Loader2 className="h-8 w-8 animate-spin text-[var(--color-accent)]" />
-            </div>
-        );
+        return {
+            title: `${post.title} | ${SITE_NAME}`,
+            description: post.excerpt || `Read ${post.title} on ${SITE_NAME}`,
+            openGraph: {
+                title: post.title,
+                description: post.excerpt || `Read ${post.title} on ${SITE_NAME}`,
+                type: "article",
+                url: `${BASE_URL}/posts/${resolvedParams.slug}`,
+                siteName: SITE_NAME,
+            },
+        };
+    } catch {
+        return {
+            title: `Post Not Found | ${SITE_NAME}`,
+        };
     }
+}
 
-    if (error || !post) {
-        return (
-            <div className="max-w-2xl mx-auto text-center py-20">
-                <p className="text-[var(--color-text-muted)] mb-4">{error || "Post not found."}</p>
-                <Link
-                    href="/"
-                    className="inline-flex items-center gap-2 font-mono text-sm text-[var(--color-accent)] hover:underline"
-                >
-                    <ArrowLeft className="h-4 w-4" />
-                    Back to posts
-                </Link>
-            </div>
-        );
+export default async function PostDetailPage({ params }: PageProps) {
+    let post;
+    try {
+        const resolvedParams = await params;
+        const response = await api.getPostBySlug(resolvedParams.slug, { next: { revalidate: 60 } });
+        post = response.data;
+    } catch {
+        notFound();
     }
 
     const publishedDate = post.publishedAt
@@ -77,8 +61,31 @@ export default function PostDetailPage() {
         })
         : "Draft";
 
+    const jsonLd = {
+        "@context": "https://schema.org",
+        "@type": "BlogPosting",
+        headline: post.title,
+        description: post.excerpt || "",
+        author: {
+            "@type": "Person",
+            name: post.author.name,
+        },
+        datePublished: post.publishedAt,
+        dateModified: post.updatedAt || post.publishedAt,
+        keywords: post.tags.map((t) => t.name).join(", "),
+    };
+
     return (
-        <article className="max-w-2xl mx-auto">
+        <article
+            className="max-w-3xl mx-auto"
+            data-author-verified={post.author.name.toLowerCase() === "admin user" ? "true" : "false"}
+            data-system-status="nominal"
+        >
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+            />
+
             {/* Back Link */}
             <Link
                 href="/"

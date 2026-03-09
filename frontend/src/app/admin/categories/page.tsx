@@ -23,9 +23,9 @@ import {
     Trash2,
     Check,
     X,
-    Loader2,
     FolderOpen,
 } from "lucide-react";
+import { SkeletonTable } from "@/components/ui/Skeleton";
 
 export default function CategoriesPage() {
     const [categories, setCategories] = useState<CategoryDTO[]>([]);
@@ -136,7 +136,7 @@ export default function CategoriesPage() {
     }
 
     return (
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-2xl mx-auto" suppressHydrationWarning>
             <Link
                 href="/admin"
                 className="inline-flex items-center gap-2 font-mono text-xs text-[var(--color-text-muted)] hover:text-[var(--color-accent)] transition-colors mb-6"
@@ -198,8 +198,10 @@ export default function CategoriesPage() {
 
             {/* List */}
             {isLoading ? (
-                <div className="flex items-center justify-center py-20">
-                    <Loader2 className="h-6 w-6 animate-spin text-[var(--color-accent)]" />
+                <div className="pt-24 pb-12">
+                    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <SkeletonTable rows={5} className="mt-8" />
+                    </div>
                 </div>
             ) : categories.length === 0 ? (
                 <div className="text-center py-16">

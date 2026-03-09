@@ -12,6 +12,7 @@ import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { api } from "@/lib/api";
 import { MarkdownRenderer } from "@/components/blog/MarkdownRenderer";
+import { Skeleton } from "@/components/ui/Skeleton";
 import { Toast } from "@/components/ui/Toast";
 import type { CategoryDTO, TagDTO, PostDTO, ApiError } from "@/lib/types";
 import {
@@ -128,14 +129,20 @@ export default function EditPostPage() {
 
     if (isLoadingPost) {
         return (
-            <div className="flex items-center justify-center py-20">
-                <Loader2 className="h-8 w-8 animate-spin text-[var(--color-accent)]" />
+            <div className="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8 space-y-6">
+                <Skeleton className="h-6 w-32 mb-8" />
+                <div className="space-y-4">
+                    <Skeleton className="h-12 w-full" />
+                    <Skeleton className="h-40 w-full" />
+                    <Skeleton className="h-12 w-1/2" />
+                    <Skeleton className="h-12 w-1/4" />
+                </div>
             </div>
         );
     }
 
     return (
-        <div className="max-w-3xl mx-auto">
+        <div className="max-w-3xl mx-auto" suppressHydrationWarning>
             <Link
                 href="/admin"
                 className="inline-flex items-center gap-2 font-mono text-xs text-[var(--color-text-muted)] hover:text-[var(--color-accent)] transition-colors mb-6"
