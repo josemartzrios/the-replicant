@@ -45,6 +45,7 @@ import java.util.List;
 public class SecurityConfig {
 
         private final JwtAuthenticationFilter jwtAuthFilter;
+        private final com.thereplicant.api.security.RateLimitFilter rateLimitFilter;
         private final UserDetailsService userDetailsService;
 
         @Value("${cors.allowed-origins:http://localhost:3000}")
@@ -134,7 +135,10 @@ public class SecurityConfig {
                                 // Use our custom authentication provider
                                 .authenticationProvider(authenticationProvider())
 
-                                // Add JWT filter before UsernamePasswordAuthenticationFilter
+                                // Add RateLimit filter before auth filters
+                                .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
+
+                                // Add JWT filter before auth filters
                                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
 
                                 .build();

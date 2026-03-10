@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import { Providers } from "./providers";
 import { ScrollTracker } from "@/components/blog/ScrollTracker";
+import { ConsoleEasterEgg } from "@/components/blog/ConsoleEasterEgg";
 import "./globals.css";
 
 const inter = Inter({
@@ -50,6 +51,7 @@ export default function RootLayout({
         <Providers>
           {children}
           <ScrollTracker />
+          <ConsoleEasterEgg />
         </Providers>
       </body>
     </html>

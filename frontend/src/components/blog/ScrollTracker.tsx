@@ -1,99 +1,66 @@
 "use client";
 
-/**
- * ScrollTracker (Epic-005: Lore Engagement Tracker)
- *
- * Shows scroll depth playfully as "XX% analyzed".
- * Adds a subtle surveillance aesthetic to the blog.
- */
-
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { useNarrative } from "@/components/providers/NarrativeProvider";
 
+/**
+ * ScrollTracker Component (Epic-005)
+ * Silently tracks how far the user scrolls down reading articles.
+ * Reaching 90% scroll depth on any post unlocks the 'deep_reader' secret
+ * and advances the ARG to Phase 1.
+ */
 export function ScrollTracker() {
-    const { phase } = useNarrative();
-    const [scrollPercentage, setScrollPercentage] = useState(0);
+    const pathname = usePathname();
+    const { phase, advancePhase, unlockSecret, hasSecret } = useNarrative();
 
     useEffect(() => {
-        function handleScroll() {
-            const windowHeight = window.innerHeight;
-            const fullHeight = document.documentElement.scrollHeight;
-            const scrollTop = window.scrollY;
+        // Only track scrolling on individual post pages for lore drops
+        if (!pathname?.startsWith("/posts/")) return;
 
-            // Prevent division by zero and calculate percentage
-            const scrollableRange = fullHeight - windowHeight;
-            let percentage = 0;
+        // If they already found this tier of secrets, don't spam calculations
+        if (hasSecret("deep_reader_1") && phase >= 1) return;
 
-            if (scrollableRange > 0) {
-                percentage = Math.round((scrollTop / scrollableRange) * 100);
+        let ticking = false;
+
+        const handleScroll = () => {
+            if (!ticking) {
+                window.requestAnimationFrame(() => {
+                    const scrollHeight = document.documentElement.scrollHeight;
+                    const scrollTop = document.documentElement.scrollTop;
+                    const clientHeight = document.documentElement.clientHeight;
+
+                    // Prevent division by zero on empty pages
+                    if (scrollHeight <= clientHeight) return;
+
+                    const scrollPercentage = (scrollTop / (scrollHeight - clientHeight)) * 100;
+
+                    // Lore trigger threshold: user read almost the entire article
+                    if (scrollPercentage > 90) {
+                        if (!hasSecret("deep_reader_1")) {
+                            unlockSecret("deep_reader_1");
+                            setTimeout(() => {
+                                console.log("%c[SYSTEM] Anomalous curiosity detected. Protocol Phase 1 initiated.", "color: #ef4444; font-weight: bold; font-family: monospace;");
+                            }, 1000);
+                        }
+
+                        if (phase < 1) {
+                            advancePhase(1);
+                        }
+                    }
+
+                    ticking = false;
+                });
+                ticking = true;
             }
+        };
 
-            setScrollPercentage(Math.min(100, Math.max(0, percentage)));
-        }
-
-        // Only add listener on mount
         window.addEventListener("scroll", handleScroll, { passive: true });
 
-        // Initial calculation
-        handleScroll();
+        return () => {
+            window.removeEventListener("scroll", handleScroll);
+        };
+    }, [pathname, phase, advancePhase, unlockSecret, hasSecret]);
 
-        return () => window.removeEventListener("scroll", handleScroll);
-    }, []);
-
-    // In phase 1, we show a basic tracker. It gets weirder in later phases.
-    let displayLabel = `${scrollPercentage}% analyzed`;
-
-    if (phase >= 3) {
-        displayLabel = scrollPercentage === 100 ? "Sync Complete." : `Processing: ${scrollPercentage}%`;
-    }
-
-    return (
-        <div className="fixed bottom-4 right-4 z-40 hidden sm:flex items-center justify-center opacity-40 hover:opacity-100 transition-opacity">
-            <div className="rounded-full bg-[var(--color-surface)] border border-[var(--color-border)] px-3 py-1.5 shadow-[0_0_15px_rgba(0,0,0,0.5)] flex items-center gap-2 backdrop-blur-md">
-                {/* Progress Ring */}
-                <div className="relative h-4 w-4">
-                    <svg className="h-full w-full -rotate-90" viewBox="0 0 24 24">
-                        {/* Background Track */}
-                        <circle
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                            strokeWidth="3"
-                            fill="transparent"
-                            className="text-[var(--color-border)]"
-                        />
-                        {/* Progress */}
-                        <circle
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                            strokeWidth="3"
-                            fill="transparent"
-                            strokeDasharray={2 * Math.PI * 10}
-                            strokeDashoffset={
-                                2 * Math.PI * 10 -
-                                (scrollPercentage / 100) * (2 * Math.PI * 10)
-                            }
-                            className="text-[var(--color-accent)] transition-all duration-150"
-                        />
-                    </svg>
-                </div>
-
-                {/* Value Text */}
-                <span className="font-mono text-[10px] uppercase tracking-widest text-[var(--color-text-muted)] w-24">
-                    {displayLabel}
-                </span>
-
-                {/* Glitch Overlay (Active only in Phase 3+) */}
-                {phase >= 3 && (
-                    <div
-                        className="absolute inset-0 bg-red-500 mix-blend-color-dodge opacity-0 hover:opacity-20 pointer-events-none transition-opacity"
-                        style={{ animation: 'glitch 2s infinite' }}
-                    />
-                )}
-            </div>
-        </div>
-    );
+    return null; // This is a silent observer
 }
