@@ -357,14 +357,12 @@ class AuthServiceTest {
     @DisplayName("Refresh Token")
     class RefreshTokenTests {
 
-        private RefreshRequest validRequest;
+        private String validRefreshTokenString;
         private User existingUser;
 
         @BeforeEach
         void setUp() {
-            validRequest = RefreshRequest.builder()
-                    .refreshToken("valid-refresh-token-string")
-                    .build();
+            validRefreshTokenString = "valid-refresh-token-string";
             existingUser = createTestUser();
         }
 
@@ -388,7 +386,7 @@ class AuthServiceTest {
             when(jwtService.generateToken(any(User.class))).thenReturn(MOCK_ACCESS_TOKEN);
 
             // Act
-            AuthResponse response = authService.refreshToken(validRequest);
+            AuthResponse response = authService.refreshToken(validRefreshTokenString);
 
             // Assert
             assertThat(response.getAccessToken()).isEqualTo(MOCK_ACCESS_TOKEN);
@@ -414,7 +412,7 @@ class AuthServiceTest {
             when(jwtService.generateToken(any(User.class))).thenReturn(MOCK_ACCESS_TOKEN);
 
             // Act
-            authService.refreshToken(validRequest);
+            authService.refreshToken(validRefreshTokenString);
 
             // Assert - Old token should be revoked
             assertThat(storedToken.getRevokedAt()).isNotNull();
@@ -429,7 +427,7 @@ class AuthServiceTest {
                     .thenReturn(Optional.empty());
 
             // Act & Assert
-            assertThatThrownBy(() -> authService.refreshToken(validRequest))
+            assertThatThrownBy(() -> authService.refreshToken(validRefreshTokenString))
                     .isInstanceOf(BadCredentialsException.class)
                     .hasMessage("Invalid refresh token");
         }
@@ -450,7 +448,7 @@ class AuthServiceTest {
                     .thenReturn(Optional.of(expiredToken));
 
             // Act & Assert
-            assertThatThrownBy(() -> authService.refreshToken(validRequest))
+            assertThatThrownBy(() -> authService.refreshToken(validRefreshTokenString))
                     .isInstanceOf(BadCredentialsException.class)
                     .hasMessageContaining("expired or revoked");
         }
@@ -472,7 +470,7 @@ class AuthServiceTest {
                     .thenReturn(Optional.of(revokedToken));
 
             // Act & Assert
-            assertThatThrownBy(() -> authService.refreshToken(validRequest))
+            assertThatThrownBy(() -> authService.refreshToken(validRefreshTokenString))
                     .isInstanceOf(BadCredentialsException.class)
                     .hasMessageContaining("expired or revoked");
         }
