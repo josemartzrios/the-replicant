@@ -138,7 +138,7 @@ export default function LoginPage() {
                             autoComplete="email"
                             autoFocus
                             placeholder="admin@thereplicant.com"
-                            className="w-full rounded-lg bg-[var(--color-surface)] border border-[var(--color-border)] px-4 py-3 text-[var(--color-text)] placeholder-[var(--color-text-faint)] focus:border-[var(--color-accent)] focus:outline-none transition-colors"
+                            className="w-full rounded-lg bg-[var(--color-surface)] border border-[var(--color-border)] px-4 py-3 text-[var(--color-text)] placeholder-[var(--color-text-faint)] focus:border-[var(--color-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--color-surface)] transition-colors"
                         />
                     </div>
 
@@ -159,7 +159,7 @@ export default function LoginPage() {
                                 required
                                 autoComplete="current-password"
                                 placeholder="••••••••••••"
-                                className="w-full rounded-lg bg-[var(--color-surface)] border border-[var(--color-border)] px-4 py-3 pr-12 text-[var(--color-text)] placeholder-[var(--color-text-faint)] focus:border-[var(--color-accent)] focus:outline-none transition-colors"
+                                className="w-full rounded-lg bg-[var(--color-surface)] border border-[var(--color-border)] px-4 py-3 pr-12 text-[var(--color-text)] placeholder-[var(--color-text-faint)] focus:border-[var(--color-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--color-surface)] transition-colors"
                             />
                             <button
                                 type="button"

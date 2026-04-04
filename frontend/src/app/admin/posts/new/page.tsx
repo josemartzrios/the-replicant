@@ -118,7 +118,7 @@ export default function CreatePostPage() {
                         onChange={(e) => setTitle(e.target.value)}
                         required
                         placeholder="Your post title"
-                        className="w-full rounded-lg bg-[var(--color-surface)] border border-[var(--color-border)] px-4 py-3 text-[var(--color-text)] placeholder-[var(--color-text-faint)] focus:border-[var(--color-accent)] focus:outline-none transition-colors"
+                        className="w-full rounded-lg bg-[var(--color-surface)] border border-[var(--color-border)] px-4 py-3 text-[var(--color-text)] placeholder-[var(--color-text-faint)] focus:border-[var(--color-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--color-surface)] transition-colors"
                     />
                 </div>
 
@@ -157,7 +157,7 @@ export default function CreatePostPage() {
                                 <MarkdownRenderer content={content} />
                             ) : (
                                 <p className="text-[var(--color-text-faint)] text-sm">
-                                    Nothing to preview yet...
+                                    Nothing to preview yet…
                                 </p>
                             )}
                         </div>
@@ -169,7 +169,7 @@ export default function CreatePostPage() {
                             required
                             rows={14}
                             placeholder="Write your post in markdown..."
-                            className="w-full rounded-lg bg-[var(--color-surface)] border border-[var(--color-border)] px-4 py-3 font-mono text-sm text-[var(--color-text)] placeholder-[var(--color-text-faint)] focus:border-[var(--color-accent)] focus:outline-none transition-colors resize-y"
+                            className="w-full rounded-lg bg-[var(--color-surface)] border border-[var(--color-border)] px-4 py-3 font-mono text-sm text-[var(--color-text)] placeholder-[var(--color-text-faint)] focus:border-[var(--color-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--color-surface)] transition-colors resize-y"
                         />
                     )}
                 </div>
@@ -188,7 +188,7 @@ export default function CreatePostPage() {
                         onChange={(e) => setExcerpt(e.target.value)}
                         rows={2}
                         placeholder="A short summary of the post..."
-                        className="w-full rounded-lg bg-[var(--color-surface)] border border-[var(--color-border)] px-4 py-3 text-sm text-[var(--color-text)] placeholder-[var(--color-text-faint)] focus:border-[var(--color-accent)] focus:outline-none transition-colors resize-y"
+                        className="w-full rounded-lg bg-[var(--color-surface)] border border-[var(--color-border)] px-4 py-3 text-sm text-[var(--color-text)] placeholder-[var(--color-text-faint)] focus:border-[var(--color-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--color-surface)] transition-colors resize-y"
                     />
                 </div>
 
@@ -206,7 +206,7 @@ export default function CreatePostPage() {
                             id="post-category"
                             value={categoryId}
                             onChange={(e) => setCategoryId(e.target.value)}
-                            className="w-full rounded-lg bg-[var(--color-surface)] border border-[var(--color-border)] px-4 py-3 text-sm text-[var(--color-text)] focus:border-[var(--color-accent)] focus:outline-none transition-colors"
+                            className="w-full rounded-lg bg-[var(--color-surface)] border border-[var(--color-border)] px-4 py-3 text-sm text-[var(--color-text)] focus:border-[var(--color-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--color-surface)] transition-colors"
                         >
                             <option value="">None</option>
                             {categories.map((cat) => (
@@ -229,7 +229,7 @@ export default function CreatePostPage() {
                             id="post-status"
                             value={status}
                             onChange={(e) => setStatus(e.target.value)}
-                            className="w-full rounded-lg bg-[var(--color-surface)] border border-[var(--color-border)] px-4 py-3 text-sm text-[var(--color-text)] focus:border-[var(--color-accent)] focus:outline-none transition-colors"
+                            className="w-full rounded-lg bg-[var(--color-surface)] border border-[var(--color-border)] px-4 py-3 text-sm text-[var(--color-text)] focus:border-[var(--color-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--color-surface)] transition-colors"
                         >
                             <option value="DRAFT">Draft</option>
                             <option value="PUBLISHED">Published</option>
@@ -274,7 +274,7 @@ export default function CreatePostPage() {
                         {isSubmitting ? (
                             <>
                                 <Loader2 className="h-4 w-4 animate-spin" />
-                                SAVING...
+                                SAVING…
                             </>
                         ) : (
                             <>
