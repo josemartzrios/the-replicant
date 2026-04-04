@@ -2,6 +2,7 @@ package com.thereplicant.api.config;
 
 import com.thereplicant.api.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -45,8 +46,10 @@ import java.util.List;
 public class SecurityConfig {
 
         private final JwtAuthenticationFilter jwtAuthFilter;
-        private final com.thereplicant.api.security.RateLimitFilter rateLimitFilter;
         private final UserDetailsService userDetailsService;
+
+        @Autowired(required = false)
+        private com.thereplicant.api.security.RateLimitFilter rateLimitFilter;
 
         @Value("${cors.allowed-origins:http://localhost:3000}")
         private String allowedOrigins;
@@ -135,8 +138,10 @@ public class SecurityConfig {
                                 // Use our custom authentication provider
                                 .authenticationProvider(authenticationProvider())
 
-                                // Add RateLimit filter before auth filters
-                                .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
+                                // Add RateLimit filter before auth filters (disabled in test profile)
+                                .addFilterBefore(
+                                                rateLimitFilter != null ? rateLimitFilter : (req, res, chain) -> chain.doFilter(req, res),
+                                                UsernamePasswordAuthenticationFilter.class)
 
                                 // Add JWT filter before auth filters
                                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
