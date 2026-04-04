@@ -5,12 +5,9 @@
  *
  * Provides authentication state management across the app:
  * - Login / Setup / Logout flows
- * - Token persistence in localStorage
- * - Auto-refresh before token expiry
- * - User state available via useAuth() hook
- *
- * Security: Tokens in localStorage for MVP.
- * Production: migrate to httpOnly cookies.
+ * - User state in localStorage (non-sensitive: name, email, role only)
+ * - Tokens handled exclusively via httpOnly cookies (set by backend)
+ * - Auto-redirect on 401 handled in api.ts
  */
 
 import {
@@ -39,14 +36,12 @@ interface AuthContextType extends AuthState {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 function saveAuthData(response: AuthResponse): void {
-    // Note: accessToken is handled by HttpOnly cookies now
-    localStorage.setItem("refreshToken", response.refreshToken);
+    // Only the non-sensitive user profile is stored in localStorage.
+    // Tokens are managed exclusively by the backend via httpOnly cookies.
     localStorage.setItem("user", JSON.stringify(response.user));
 }
 
 function clearAuthData(): void {
-    // Note: accessToken is handled by HttpOnly cookies now
-    localStorage.removeItem("refreshToken");
     localStorage.removeItem("user");
 }
 
@@ -57,15 +52,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isLoading: true,
     });
 
-    // Restore auth state from localStorage on mount
+    // Restore user profile from localStorage on mount.
+    // Actual session validity is enforced by the backend on each API call
+    // via the httpOnly accessToken cookie. A 401 response clears this state
+    // and redirects to /login (handled in api.ts).
     useEffect(() => {
-        // We no longer rely on 'accessToken' resting in localStorage.
-        // As long as we have a refresh token and user info, we assume session is valid. 
-        // The backend will enforce security via HttpOnly cookies.
-        const refreshToken = localStorage.getItem("refreshToken");
         const userStr = localStorage.getItem("user");
-
-        if (refreshToken && userStr) {
+        if (userStr) {
             try {
                 const user: UserDTO = JSON.parse(userStr);
                 setState({ user, isAuthenticated: true, isLoading: false });
@@ -104,47 +97,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     );
 
     const logout = useCallback(async () => {
-        const refreshToken = localStorage.getItem("refreshToken");
         try {
-            if (refreshToken) {
-                await api.logout(refreshToken);
-            }
+            await api.logout();
         } catch {
             // Logout should always succeed on the client side
         } finally {
             clearAuthData();
             setState({ user: null, isAuthenticated: false, isLoading: false });
-            // Force a hard redirect to clear all React/Next.js client cache
             window.location.href = "/login";
         }
     }, []);
 
     return (
-        <AuthContext.Provider
-            value={{
-                ...state,
-                login,
-                setup,
-                logout,
-            }}
-        >
+        <AuthContext.Provider value={{ ...state, login, setup, logout }}>
             {children}
         </AuthContext.Provider>
     );
 }
 
-/**
- * Hook to access authentication state and actions.
- *
- * @example
- * const { user, isAuthenticated, login, logout } = useAuth();
- */
 export function useAuth(): AuthContextType {
     const context = useContext(AuthContext);
-
     if (!context) {
         throw new Error("useAuth must be used within an AuthProvider");
     }
-
     return context;
 }

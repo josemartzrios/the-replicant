@@ -1,5 +1,18 @@
 /** @type {import('next').NextConfig} */
 
+// Derive the backend API origin for the connect-src CSP directive.
+// In production, NEXT_PUBLIC_API_URL points to Railway (https://...).
+// In development, it defaults to http://localhost:8080/api/v1.
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/v1";
+const apiOrigin = (() => {
+    try {
+        const url = new URL(apiUrl);
+        return `${url.protocol}//${url.host}`;
+    } catch {
+        return "http://localhost:8080";
+    }
+})();
+
 const cspHeader = `
     default-src 'self';
     script-src 'self' 'unsafe-eval' 'unsafe-inline';
@@ -10,7 +23,7 @@ const cspHeader = `
     base-uri 'self';
     form-action 'self';
     frame-ancestors 'none';
-    connect-src 'self' http://localhost:8080 https:;
+    connect-src 'self' ${apiOrigin};
     upgrade-insecure-requests;
 `;
 
