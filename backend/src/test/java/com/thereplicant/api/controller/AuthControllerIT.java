@@ -1,9 +1,9 @@
 package com.thereplicant.api.controller;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thereplicant.api.repository.RefreshTokenRepository;
 import com.thereplicant.api.repository.UserRepository;
+import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -67,6 +67,15 @@ class AuthControllerIT {
                 userRepository.deleteAll();
         }
 
+        /**
+         * Helper: extract the refreshToken cookie value from a MockMvc response.
+         */
+        private String extractRefreshTokenCookie(MvcResult result) {
+                Cookie cookie = result.getResponse().getCookie("refreshToken");
+                assertThat(cookie).as("refreshToken cookie must be present in response").isNotNull();
+                return cookie.getValue();
+        }
+
         // =========================================================================
         // GET /api/v1/auth/status
         // =========================================================================
@@ -107,18 +116,23 @@ class AuthControllerIT {
         class SetupEndpointTests {
 
                 @Test
-                @DisplayName("Should create admin and return 201 with tokens")
+                @DisplayName("Should create admin and return 201 with tokens in cookies")
                 void shouldCreateAdminSuccessfully() throws Exception {
-                        mockMvc.perform(post("/api/v1/auth/setup")
+                        MvcResult result = mockMvc.perform(post("/api/v1/auth/setup")
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(SETUP_JSON))
                                         .andExpect(status().isCreated())
-                                        .andExpect(jsonPath("$.accessToken").isNotEmpty())
-                                        .andExpect(jsonPath("$.refreshToken").isNotEmpty())
+                                        .andExpect(jsonPath("$.accessToken").doesNotExist())
+                                        .andExpect(jsonPath("$.refreshToken").doesNotExist())
                                         .andExpect(jsonPath("$.expiresIn").isNumber())
                                         .andExpect(jsonPath("$.user.email").value("admin@thereplicant.com"))
                                         .andExpect(jsonPath("$.user.name").value("Admin User"))
-                                        .andExpect(jsonPath("$.user.role").value("ADMIN"));
+                                        .andExpect(jsonPath("$.user.role").value("ADMIN"))
+                                        .andReturn();
+
+                        // Tokens must be set as httpOnly cookies, not in the response body
+                        assertThat(result.getResponse().getCookie("accessToken")).isNotNull();
+                        assertThat(result.getResponse().getCookie("refreshToken")).isNotNull();
 
                         // Verify user persisted in database
                         assertThat(userRepository.count()).isEqualTo(1);
@@ -224,15 +238,20 @@ class AuthControllerIT {
                 }
 
                 @Test
-                @DisplayName("Should login successfully with correct credentials")
+                @DisplayName("Should login successfully and set token cookies")
                 void shouldLoginSuccessfully() throws Exception {
-                        mockMvc.perform(post("/api/v1/auth/login")
+                        MvcResult result = mockMvc.perform(post("/api/v1/auth/login")
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(LOGIN_JSON))
                                         .andExpect(status().isOk())
-                                        .andExpect(jsonPath("$.accessToken").isNotEmpty())
-                                        .andExpect(jsonPath("$.refreshToken").isNotEmpty())
-                                        .andExpect(jsonPath("$.user.email").value("admin@thereplicant.com"));
+                                        .andExpect(jsonPath("$.accessToken").doesNotExist())
+                                        .andExpect(jsonPath("$.refreshToken").doesNotExist())
+                                        .andExpect(jsonPath("$.user.email").value("admin@thereplicant.com"))
+                                        .andReturn();
+
+                        // Tokens must be delivered as httpOnly cookies
+                        assertThat(result.getResponse().getCookie("accessToken")).isNotNull();
+                        assertThat(result.getResponse().getCookie("refreshToken")).isNotNull();
                 }
 
                 @Test
@@ -304,11 +323,14 @@ class AuthControllerIT {
                                         }
                                         """;
 
-                        mockMvc.perform(post("/api/v1/auth/login")
+                        MvcResult result = mockMvc.perform(post("/api/v1/auth/login")
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(upperCaseEmailJson))
                                         .andExpect(status().isOk())
-                                        .andExpect(jsonPath("$.accessToken").isNotEmpty());
+                                        .andReturn();
+
+                        // Access token must be delivered as a cookie
+                        assertThat(result.getResponse().getCookie("accessToken")).isNotNull();
                 }
         }
 
@@ -328,28 +350,25 @@ class AuthControllerIT {
                 }
 
                 @Test
-                @DisplayName("Should refresh tokens successfully")
+                @DisplayName("Should refresh tokens successfully using cookie")
                 void shouldRefreshTokensSuccessfully() throws Exception {
-                        // Login to get refresh token
+                        // Login to get refresh token cookie
                         MvcResult loginResult = mockMvc.perform(post("/api/v1/auth/login")
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(LOGIN_JSON))
                                         .andReturn();
 
-                        String refreshToken = objectMapper.readTree(
-                                        loginResult.getResponse().getContentAsString()).get("refreshToken").asText();
+                        String refreshTokenValue = extractRefreshTokenCookie(loginResult);
 
-                        // Use refresh token
-                        String refreshJson = String.format("""
-                                        {"refreshToken": "%s"}
-                                        """, refreshToken);
-
-                        mockMvc.perform(post("/api/v1/auth/refresh")
-                                        .contentType(MediaType.APPLICATION_JSON)
-                                        .content(refreshJson))
+                        // Use refresh token cookie
+                        MvcResult refreshResult = mockMvc.perform(post("/api/v1/auth/refresh")
+                                        .cookie(new Cookie("refreshToken", refreshTokenValue)))
                                         .andExpect(status().isOk())
-                                        .andExpect(jsonPath("$.accessToken").isNotEmpty())
-                                        .andExpect(jsonPath("$.refreshToken").isNotEmpty());
+                                        .andReturn();
+
+                        // New tokens must be delivered as cookies
+                        assertThat(refreshResult.getResponse().getCookie("accessToken")).isNotNull();
+                        assertThat(refreshResult.getResponse().getCookie("refreshToken")).isNotNull();
                 }
 
                 // Token rotation behavior is validated by shouldRejectReusedRefreshToken:
@@ -359,42 +378,37 @@ class AuthControllerIT {
                 @Test
                 @DisplayName("Should reject reused refresh token (one-time use)")
                 void shouldRejectReusedRefreshToken() throws Exception {
-                        // Login to get refresh token
+                        // Login to get refresh token cookie
                         MvcResult loginResult = mockMvc.perform(post("/api/v1/auth/login")
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(LOGIN_JSON))
                                         .andReturn();
 
-                        String refreshToken = objectMapper.readTree(
-                                        loginResult.getResponse().getContentAsString()).get("refreshToken").asText();
-
-                        String refreshJson = String.format("""
-                                        {"refreshToken": "%s"}
-                                        """, refreshToken);
+                        String refreshTokenValue = extractRefreshTokenCookie(loginResult);
 
                         // First use - should succeed
                         mockMvc.perform(post("/api/v1/auth/refresh")
-                                        .contentType(MediaType.APPLICATION_JSON)
-                                        .content(refreshJson))
+                                        .cookie(new Cookie("refreshToken", refreshTokenValue)))
                                         .andExpect(status().isOk());
 
                         // Second use of same token - should fail (token rotation)
                         mockMvc.perform(post("/api/v1/auth/refresh")
-                                        .contentType(MediaType.APPLICATION_JSON)
-                                        .content(refreshJson))
+                                        .cookie(new Cookie("refreshToken", refreshTokenValue)))
                                         .andExpect(status().isUnauthorized());
                 }
 
                 @Test
-                @DisplayName("Should return 401 with invalid refresh token")
+                @DisplayName("Should return 401 with invalid refresh token cookie")
                 void shouldReturn401WithInvalidToken() throws Exception {
-                        String invalidJson = """
-                                        {"refreshToken": "completely-invalid-token"}
-                                        """;
-
                         mockMvc.perform(post("/api/v1/auth/refresh")
-                                        .contentType(MediaType.APPLICATION_JSON)
-                                        .content(invalidJson))
+                                        .cookie(new Cookie("refreshToken", "completely-invalid-token")))
+                                        .andExpect(status().isUnauthorized());
+                }
+
+                @Test
+                @DisplayName("Should return 401 when refresh token cookie is absent")
+                void shouldReturn401WhenNoCookie() throws Exception {
+                        mockMvc.perform(post("/api/v1/auth/refresh"))
                                         .andExpect(status().isUnauthorized());
                 }
         }
@@ -422,6 +436,9 @@ class AuthControllerIT {
                                         .andExpect(status().isCreated())
                                         .andReturn();
 
+                        assertThat(setupResult.getResponse().getCookie("accessToken")).isNotNull();
+                        assertThat(setupResult.getResponse().getCookie("refreshToken")).isNotNull();
+
                         // 3. Check status - no longer required
                         mockMvc.perform(get("/api/v1/auth/status"))
                                         .andExpect(jsonPath("$.setupRequired").value(false));
@@ -433,17 +450,15 @@ class AuthControllerIT {
                                         .andExpect(status().isOk())
                                         .andReturn();
 
-                        String refreshToken = objectMapper.readTree(
-                                        loginResult.getResponse().getContentAsString()).get("refreshToken").asText();
+                        String refreshTokenValue = extractRefreshTokenCookie(loginResult);
 
-                        // 5. Refresh token
-                        mockMvc.perform(post("/api/v1/auth/refresh")
-                                        .contentType(MediaType.APPLICATION_JSON)
-                                        .content(String.format("""
-                                                        {"refreshToken": "%s"}
-                                                        """, refreshToken)))
+                        // 5. Refresh token using cookie
+                        MvcResult refreshResult = mockMvc.perform(post("/api/v1/auth/refresh")
+                                        .cookie(new Cookie("refreshToken", refreshTokenValue)))
                                         .andExpect(status().isOk())
-                                        .andExpect(jsonPath("$.accessToken").isNotEmpty());
+                                        .andReturn();
+
+                        assertThat(refreshResult.getResponse().getCookie("accessToken")).isNotNull();
                 }
         }
 }

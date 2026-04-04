@@ -119,23 +119,21 @@ public class AuthService {
     }
 
     /**
-     * Refresh access token using refresh token.
+     * Refresh access token using a raw refresh token string.
      * Implements token rotation (old token is revoked).
-     * 
+     *
      * @throws BadCredentialsException if refresh token is invalid or expired
      */
     @Transactional
-    public AuthResponse refreshToken(RefreshRequest request) {
-        String tokenHash = hashToken(request.getRefreshToken());
+    public AuthResponse refreshToken(String refreshTokenValue) {
+        String tokenHash = hashToken(refreshTokenValue);
 
-        // Find and validate refresh token
         RefreshToken storedToken = refreshTokenRepository.findByTokenHash(tokenHash)
                 .orElseThrow(() -> {
                     log.warn("REFRESH_FAILED: Token not found");
                     return new BadCredentialsException("Invalid refresh token");
                 });
 
-        // Check if token is valid (not expired, not revoked)
         if (!storedToken.isValid()) {
             log.warn("REFRESH_FAILED: Token expired or revoked for user={}",
                     storedToken.getUser().getId());
@@ -143,8 +141,6 @@ public class AuthService {
         }
 
         User user = storedToken.getUser();
-
-        // Token rotation: revoke old token
         storedToken.revoke();
         refreshTokenRepository.save(storedToken);
 

@@ -7,6 +7,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -21,6 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * Uses Bucket4j for token-bucket algorithm per IP Address.
  */
 @Component
+@Profile("!test")
 @Slf4j
 public class RateLimitFilter extends OncePerRequestFilter {
 
@@ -76,11 +78,21 @@ public class RateLimitFilter extends OncePerRequestFilter {
         return Bucket.builder().addLimit(limit).build();
     }
 
+    /**
+     * Extract the real client IP from the request.
+     *
+     * Uses the LAST value in X-Forwarded-For because Railway (and most
+     * reverse proxies) append the real client IP at the end of the chain.
+     * The first value is client-controlled and can be spoofed.
+     *
+     * Falls back to getRemoteAddr() if the header is absent.
+     */
     private String getClientIP(HttpServletRequest request) {
         String xfHeader = request.getHeader("X-Forwarded-For");
-        if (xfHeader == null || xfHeader.isEmpty() || "unknown".equalsIgnoreCase(xfHeader)) {
+        if (xfHeader == null || xfHeader.isBlank() || "unknown".equalsIgnoreCase(xfHeader)) {
             return request.getRemoteAddr();
         }
-        return xfHeader.split(",")[0].trim();
+        String[] parts = xfHeader.split(",");
+        return parts[parts.length - 1].trim();
     }
 }

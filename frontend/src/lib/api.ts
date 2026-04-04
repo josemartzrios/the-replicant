@@ -67,7 +67,6 @@ class ApiClient {
             // so they can handle the error and show a message inline
             const isAuthEndpoint = path.startsWith("/auth/");
             if (response.status === 401 && !isAuthEndpoint && typeof window !== "undefined") {
-                localStorage.removeItem("refreshToken");
                 localStorage.removeItem("user");
                 // Note: The /auth/logout API handles clearing the HttpOnly cookie.
                 window.location.href = "/login";
@@ -101,17 +100,15 @@ class ApiClient {
         });
     }
 
-    async logout(refreshToken: string): Promise<void> {
+    async logout(): Promise<void> {
         return this.request<void>("/auth/logout", {
             method: "POST",
-            body: JSON.stringify({ refreshToken }),
         });
     }
 
-    async refreshToken(refreshToken: string): Promise<AuthResponse> {
+    async refreshToken(): Promise<AuthResponse> {
         return this.request<AuthResponse>("/auth/refresh", {
             method: "POST",
-            body: JSON.stringify({ refreshToken }),
         });
     }
 
@@ -221,7 +218,7 @@ class ApiClient {
         data: CreateCategoryRequest
     ): Promise<ApiResponse<CategoryDTO>> {
         return this.request<ApiResponse<CategoryDTO>>(`/categories/${id}`, {
-            method: "PUT",
+            method: "PATCH",
             body: JSON.stringify(data),
         });
     }

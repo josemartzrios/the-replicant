@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -19,10 +20,18 @@ interface PageProps {
     params: Promise<{ slug: string }>;
 }
 
+/**
+ * Cached per-request fetch — deduplicates the call between
+ * generateMetadata() and the page component within the same render.
+ */
+const fetchPost = cache(async (slug: string) => {
+    return api.getPostBySlug(slug, { next: { revalidate: 60 } });
+});
+
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
     try {
         const resolvedParams = await params;
-        const response = await api.getPostBySlug(resolvedParams.slug, { next: { revalidate: 60 } });
+        const response = await fetchPost(resolvedParams.slug);
         const post = response.data;
 
         return {
@@ -47,7 +56,7 @@ export default async function PostDetailPage({ params }: PageProps) {
     let post;
     try {
         const resolvedParams = await params;
-        const response = await api.getPostBySlug(resolvedParams.slug, { next: { revalidate: 60 } });
+        const response = await fetchPost(resolvedParams.slug);
         post = response.data;
     } catch {
         notFound();
@@ -113,15 +122,15 @@ export default async function PostDetailPage({ params }: PageProps) {
             {/* Metadata */}
             <div className="flex flex-wrap items-center gap-4 font-mono text-xs text-[var(--color-text-faint)] mb-8 pb-8 border-b border-[var(--color-border)]">
                 <span className="flex items-center gap-1.5">
-                    <User className="h-3 w-3" />
+                    <User className="h-3 w-3" aria-hidden="true" />
                     {post.author.name}
                 </span>
                 <span className="flex items-center gap-1.5">
-                    <Calendar className="h-3 w-3" />
+                    <Calendar className="h-3 w-3" aria-hidden="true" />
                     {publishedDate}
                 </span>
                 <span className="flex items-center gap-1.5">
-                    <Clock className="h-3 w-3" />
+                    <Clock className="h-3 w-3" aria-hidden="true" />
                     {post.readingTimeMinutes} min read
                 </span>
             </div>
@@ -134,7 +143,7 @@ export default async function PostDetailPage({ params }: PageProps) {
             {/* Tags */}
             {post.tags.length > 0 && (
                 <div className="flex items-center gap-2 flex-wrap pt-6 border-t border-[var(--color-border)]">
-                    <Tag className="h-3.5 w-3.5 text-[var(--color-text-faint)]" />
+                    <Tag className="h-3.5 w-3.5 text-[var(--color-text-faint)]" aria-hidden="true" />
                     {post.tags.map((tag) => (
                         <Link
                             key={tag.id}
