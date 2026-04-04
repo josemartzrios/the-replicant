@@ -85,7 +85,7 @@ public class CategoryController {
     /**
      * Update an existing category (admin only).
      */
-    @PutMapping("/{id}")
+    @PatchMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Map<String, Object>> updateCategory(
             @PathVariable UUID id,

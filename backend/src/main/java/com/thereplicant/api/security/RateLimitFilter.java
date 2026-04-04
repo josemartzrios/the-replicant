@@ -78,11 +78,21 @@ public class RateLimitFilter extends OncePerRequestFilter {
         return Bucket.builder().addLimit(limit).build();
     }
 
+    /**
+     * Extract the real client IP from the request.
+     *
+     * Uses the LAST value in X-Forwarded-For because Railway (and most
+     * reverse proxies) append the real client IP at the end of the chain.
+     * The first value is client-controlled and can be spoofed.
+     *
+     * Falls back to getRemoteAddr() if the header is absent.
+     */
     private String getClientIP(HttpServletRequest request) {
         String xfHeader = request.getHeader("X-Forwarded-For");
-        if (xfHeader == null || xfHeader.isEmpty() || "unknown".equalsIgnoreCase(xfHeader)) {
+        if (xfHeader == null || xfHeader.isBlank() || "unknown".equalsIgnoreCase(xfHeader)) {
             return request.getRemoteAddr();
         }
-        return xfHeader.split(",")[0].trim();
+        String[] parts = xfHeader.split(",");
+        return parts[parts.length - 1].trim();
     }
 }
