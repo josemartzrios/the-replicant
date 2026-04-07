@@ -1,12 +1,11 @@
 /**
  * Next.js Proxy — Server-side route protection.
  *
- * Provides an early redirect for unauthenticated users trying to
- * access /admin/* routes. Checks for the presence of a token cookie/header.
+ * Checks for the presence of the httpOnly accessToken cookie before
+ * rendering any /admin/* page. Redirects to /login if missing.
  *
- * Note: This is a lightweight first-pass check. The actual JWT validation
- * happens on the backend. The client-side AdminLayout provides a second
- * layer of protection using the AuthContext.
+ * Note: This does NOT validate the JWT signature — the backend enforces that.
+ * This prevents unauthenticated requests from receiving admin HTML at all.
  *
  * Defense in Depth (OWASP): Multiple layers of auth checking.
  */
@@ -15,15 +14,12 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 export function proxy(request: NextRequest) {
-    const { pathname } = request.nextUrl;
+    const accessToken = request.cookies.get("accessToken");
 
-    // Only protect /admin routes
-    if (pathname.startsWith("/admin")) {
-        // Check for token in cookie or Authorization header
-        // Since we use localStorage (MVP), the proxy can't see the token directly.
-        // The client-side AdminLayout handles the actual redirect.
-        // This proxy is a placeholder for future httpOnly cookie approach.
-        return NextResponse.next();
+    if (!accessToken?.value) {
+        const loginUrl = new URL("/login", request.url);
+        loginUrl.searchParams.set("from", request.nextUrl.pathname);
+        return NextResponse.redirect(loginUrl);
     }
 
     return NextResponse.next();
