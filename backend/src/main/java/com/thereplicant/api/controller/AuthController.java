@@ -51,7 +51,7 @@ public class AuthController {
                 .secure(cookieSecure)
                 .path("/")
                 .maxAge(authData.getExpiresIn() > 0 ? authData.getExpiresIn() : ACCESS_TOKEN_MAX_AGE)
-                .sameSite("Lax")
+                .sameSite("None")
                 .build();
         response.addHeader(HttpHeaders.SET_COOKIE, accessCookie.toString());
 
@@ -61,7 +61,7 @@ public class AuthController {
                     .secure(cookieSecure)
                     .path("/api/v1/auth")
                     .maxAge(REFRESH_TOKEN_MAX_AGE)
-                    .sameSite("Lax")
+                    .sameSite("None")
                     .build();
             response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
         }
@@ -138,9 +138,9 @@ public class AuthController {
         authService.logout(user);
 
         ResponseCookie clearAccess = ResponseCookie.from("accessToken", "")
-                .httpOnly(true).secure(cookieSecure).path("/").maxAge(0).sameSite("Lax").build();
+                .httpOnly(true).secure(cookieSecure).path("/").maxAge(0).sameSite("None").build();
         ResponseCookie clearRefresh = ResponseCookie.from("refreshToken", "")
-                .httpOnly(true).secure(cookieSecure).path("/api/v1/auth").maxAge(0).sameSite("Lax").build();
+                .httpOnly(true).secure(cookieSecure).path("/api/v1/auth").maxAge(0).sameSite("None").build();
 
         httpServletResponse.addHeader(HttpHeaders.SET_COOKIE, clearAccess.toString());
         httpServletResponse.addHeader(HttpHeaders.SET_COOKIE, clearRefresh.toString());
