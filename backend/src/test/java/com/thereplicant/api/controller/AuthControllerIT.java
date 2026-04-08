@@ -207,6 +207,20 @@ class AuthControllerIT {
                 }
 
                 @Test
+                @DisplayName("Should set SameSite=None on auth cookies for cross-origin support")
+                void shouldSetSameSiteNoneOnCookies() throws Exception {
+                        MvcResult result = mockMvc.perform(post("/api/v1/auth/setup")
+                                        .contentType(MediaType.APPLICATION_JSON)
+                                        .content(SETUP_JSON))
+                                        .andExpect(status().isCreated())
+                                        .andReturn();
+
+                        // Set-Cookie header is the only way to inspect SameSite via MockMvc
+                        String setCookieHeader = result.getResponse().getHeader("Set-Cookie");
+                        assertThat(setCookieHeader).containsIgnoringCase("SameSite=None");
+                }
+
+                @Test
                 @DisplayName("Should store password hashed, not in plain text")
                 void shouldStorePasswordHashed() throws Exception {
                         mockMvc.perform(post("/api/v1/auth/setup")
