@@ -1,0 +1,223 @@
+# 🔍 Auditoría Completa del Proyecto — The Replicant
+
+**Auditor:** Senior Architect
+**Fecha:** 2026-02-11
+**Scope:** Backend completo (Step 1-6)
+**Calificación General:** **7.5/10** — Buen cimiento, pero tiene gaps de seguridad y arquitectura que deben resolverse antes de producción.
+
+---
+
+## 📊 Resumen Ejecutivo
+
+| Área | Nota | Veredicto |
+|------|------|-----------|
+| Arquitectura / Estructura | 8/10 | ✅ Bien organizada, capas separadas |
+| Seguridad (OWASP) | 6/10 | ⚠️ Gaps importantes pendientes |
+| Clean Code / SOLID | 8/10 | ✅ Código legible, buenas abstracciones |
+| Testing | 8/10 | ✅ Buena cobertura unit + integration |
+| Configuración / DevOps | 7/10 | ⚠️ Algunos problemas del .gitignore |
+| Documentación | 9/10 | ✅ Excelente para un MVP |
+
+---
+
+## 🔴 Hallazgos CRÍTICOS (deben resolverse)
+
+### 1. [.gitignore](file:///c:/Users/josma/OneDrive/Escritorio/the-replicant/.gitignore) excluye archivos necesarios del build
+
+```gitignore
+# PROBLEMA: Estás ignorando el Maven Wrapper
+.mvn/
+mvnw
+mvnw.cmd
+```
+
+**Impacto:** Cualquier desarrollador que clone el repo no puede ejecutar `./mvnw` — que es exactamente el comando que todo tu proyecto usa. El Maven Wrapper **debe** estar en el repositorio porque garantiza que todos usen la misma versión de Maven.
+
+**Fix:**
+```diff
+-# Excluir todo .mvn/
+-.mvn/
+-mvnw
+-mvnw.cmd
++# Maven Wrapper - mantener en repo excepto jar
++!.mvn/wrapper/maven-wrapper.properties
++.mvn/wrapper/maven-wrapper.jar
+```
+
+---
+
+### 2. Sin Security Headers configurados
+
+[SecurityConfig.java](file:///c:/Users/josma/OneDrive/Escritorio/the-replicant/backend/src/main/java/com/thereplicant/api/config/SecurityConfig.java) no tiene headers de seguridad HTTP. Según OWASP:
+
+**Faltan:**
+- `Content-Security-Policy` — Previene XSS
+- `X-Content-Type-Options: nosniff` — Previene MIME sniffing
+- `X-Frame-Options: DENY` — Previene clickjacking
+- `Strict-Transport-Security` (HSTS) — Fuerza HTTPS
+- `Cache-Control` en respuestas autenticadas
+
+**Fix:** Agregar al `SecurityFilterChain`:
+```java
+.headers(headers -> headers
+    .contentSecurityPolicy(csp -> csp.policyDirectives("default-src 'self'"))
+    .frameOptions(frame -> frame.deny())
+    .httpStrictTransportSecurity(hsts -> hsts.maxAgeInSeconds(31536000))
+)
+```
+
+---
+
+### 3. Sin Rate Limiting en endpoints de autenticación
+
+Las user stories especifican rate limiting (máx 5 intentos en 15 min) pero **no está implementado**. Sin esto:
+- Un atacante puede hacer brute force de passwords a velocidad ilimitada
+- No hay protección contra credential stuffing
+
+**Recomendación:** Implementar con `bucket4j` o un filtro custom antes del Step 7.
+
+---
+
+### 4. `/api/v1/auth/logout` no existe como endpoint
+
+El [AuthController](file:///c:/Users/josma/OneDrive/Escritorio/the-replicant/backend/src/main/java/com/thereplicant/api/controller/AuthController.java) tiene status, setup, login, y refresh, pero **no logout**. El `AuthService.logout()` existe pero no tiene endpoint REST.
+
+**Fix:** Agregar el endpoint:
+```java
+@PostMapping("/logout")
+public ResponseEntity<Void> logout(@AuthenticationPrincipal User user) {
+    authService.logout(user);
+    return ResponseEntity.noContent().build();
+}
+```
+
+---
+
+## 🟡 Hallazgos MEDIOS (mejorar antes de producción)
+
+### 5. `HealthController.readiness()` no verifica la BD real
+
+```java
+// TODO: Add actual database connectivity check when JPA is configured
+"database", "NOT_CONFIGURED"
+```
+
+JPA ya está configurado. Este TODO quedó obsoleto. El readiness probe debería verificar la conexión a PostgreSQL.
+
+---
+
+### 6. [GlobalExceptionHandler](file:///c:/Users/josma/OneDrive/Escritorio/the-replicant/backend/src/main/java/com/thereplicant/api/exception/GlobalExceptionHandler.java#22-94) — `IllegalStateException` es demasiado genérico
+
+```java
+@ExceptionHandler(IllegalStateException.class)
+public ProblemDetail handleIllegalState(...)
+```
+
+`IllegalStateException` es una excepción genérica de Java. Cualquier librería podría lanzarla y tu handler la interceptaría retornando 409 Conflict en vez del error correcto.
+
+**Fix:** Crear una excepción custom `SetupAlreadyCompletedException` en lugar de usar `IllegalStateException`.
+
+---
+
+### 7. `BadCredentialsException` expone mensajes diferentes
+
+En [GlobalExceptionHandler.java#L56](file:///c:/Users/josma/OneDrive/Escritorio/the-replicant/backend/src/main/java/com/thereplicant/api/exception/GlobalExceptionHandler.java#L56):
+
+```java
+problem.setDetail(ex.getMessage()); // ← Expone el mensaje original
+```
+
+Aunque el [AuthService](file:///c:/Users/josma/OneDrive/Escritorio/the-replicant/backend/src/main/java/com/thereplicant/api/service/AuthService.java#37-247) usa el mismo mensaje para ambos errores, el handler debería **hardcodear** un mensaje genérico para garantizar anti-enumeration incluso si alguien modifica el service:
+
+```java
+problem.setDetail("Invalid email or password"); // Siempre el mismo
+```
+
+---
+
+### 8. Password policy inconsistente
+
+- **SetupRequest.java** dice `@Size(min = 8)` — mínimo 8 caracteres
+- **User stories** dicen: "12 characters, 1 uppercase, 1 number, 1 special"
+- **No hay** validación de complejidad (uppercase, number, special char)
+
+**Recomendación:** Agregar `@Pattern` con regex o validación custom en el service.
+
+---
+
+### 9. Sin CORS configurado
+
+[SecurityConfig](file:///c:/Users/josma/OneDrive/Escritorio/the-replicant/backend/src/main/java/com/thereplicant/api/config/SecurityConfig.java#32-129) no tiene configuración CORS. Cuando el frontend (Next.js en `:3000`) intente llamar al backend (`:8080`), será bloqueado por el navegador.
+
+**Fix necesario antes del Step 8 (Frontend):**
+```java
+.cors(cors -> cors.configurationSource(corsConfigurationSource()))
+```
+
+---
+
+### 10. `DevTokenController` todavía existe
+
+Hay un controller de desarrollo (test tokens) que debería estar protegido con `@Profile("dev")` y verificado que no se expone en producción.
+
+---
+
+## 🟢 Lo que está BIEN hecho
+
+### ✅ Arquitectura limpia
+- Separación clara: `controller → service → repository`
+- DTOs separados de entities (no expones la BD directamente)
+- Un service por responsabilidad (SRP ✅)
+
+### ✅ Seguridad base sólida
+- Passwords con BCrypt strength 12 ✅
+- Refresh tokens almacenados como SHA-256 hash ✅
+- Token rotation implementada ✅
+- Email normalizado (lowercase + trim) ✅
+- Mensajes genéricos anti-enumeration ✅
+- Sesiones stateless (JWT) ✅
+
+### ✅ Entities bien diseñadas
+- UUIDs como IDs (no secuenciales — previene IDOR) ✅
+- Índices en RefreshToken (token_hash, expires_at, user_id) ✅
+- Audit fields (createdAt, updatedAt) ✅
+- Soft delete para tokens (revokedAt vs delete) ✅
+
+### ✅ Exception handling RFC 7807
+- ProblemDetail para todos los errores ✅
+- Generic catch-all sin stack traces ✅
+- Logging de errores inesperados ✅
+
+### ✅ Testing robusto
+- 41 tests totales (8 + 18 + 15) ✅
+- Unit + Integration coverage ✅
+- H2 para tests de integración ✅
+- Tests de seguridad (anti-enumeration) ✅
+
+### ✅ Documentación excelente
+- Roadmap actualizado ✅
+- User stories con acceptance criteria ✅
+- Lessons learned como bitácora de aprendizaje ✅
+- Smoke test documentado ✅
+
+---
+
+## 📋 Plan de Acción Priorizado
+
+| Prioridad | Hallazgo | Cuándo resolverlo |
+|-----------|----------|-------------------|
+| 🔴 P0 | Agregar endpoint `/auth/logout` | Antes del Step 7 |
+| 🔴 P0 | Agregar Security Headers | Antes del deploy (Step 9) |
+| 🔴 P0 | Fixear .gitignore (Maven Wrapper) | Inmediato |
+| 🟡 P1 | Rate Limiting en auth | Sprint 3 o antes del deploy |
+| 🟡 P1 | Custom exception en vez de IllegalStateException | Durante Step 7 |
+| 🟡 P1 | CORS configuration | Antes del Step 8 (Frontend) |
+| 🟡 P1 | Hardcodear mensaje en BadCredentials handler | Quick fix |
+| 🟡 P2 | Password policy completa | Sprint 3 |
+| 🟡 P2 | Readiness probe real | Antes del deploy |
+| 🟡 P2 | Verificar DevTokenController en prod | Antes del deploy |
+
+---
+
+**Document Version**: 1.0
+**Created**: 2026-02-11

@@ -1,0 +1,29 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:replicant_db}
+    username: ${POSTGRES_USER:replicant}
+    password: ${POSTGRES_PASSWORD:replicant123}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+
+jwt:
+  secret: dGhlLXJlcGxpY2FudC1kZXYtc2VjcmV0LWtleS0yMDI2LWNoYW5nZS1pbi1wcm9kdWN0aW9uLTEyMzQ1Njc4OTA=
+  expiration-ms: 86400000
+
+cors:
+  allowed-origins: http://localhost:3000
+
+logging:
+  level:
+    root: INFO
+    com.thereplicant: DEBUG

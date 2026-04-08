@@ -1,0 +1,59 @@
+import type { Metadata } from "next";
+import { Inter, JetBrains_Mono } from "next/font/google";
+import { Providers } from "./providers";
+import { ScrollTracker } from "@/components/blog/ScrollTracker";
+import { ConsoleEasterEgg } from "@/components/blog/ConsoleEasterEgg";
+import "./globals.css";
+
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-jetbrains-mono",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+export const metadata: Metadata = {
+  title: {
+    default: "The Replicant",
+    template: "%s | The Replicant",
+  },
+  description:
+    "A cyberpunk-themed developer blog exploring technology, code, and the stories behind them.",
+  keywords: ["blog", "technology", "cyberpunk", "development"],
+  authors: [{ name: "The Replicant" }],
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    siteName: "The Replicant",
+  },
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="en" className="dark">
+      <body
+        className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased`}
+      >
+        <div
+          dangerouslySetInnerHTML={{
+            __html: '<!-- Sistema iniciado. Observando. Aprendiendo. -->'
+          }}
+        />
+        <Providers>
+          {children}
+          <ScrollTracker />
+          <ConsoleEasterEgg />
+        </Providers>
+      </body>
+    </html>
+  );
+}

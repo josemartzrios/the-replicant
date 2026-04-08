@@ -1,0 +1,333 @@
+@import "tailwindcss";
+
+/* ============================================================
+ * The Replicant — Cosmic Neo-Noir Design System
+ * ============================================================
+ * Palette: Deep Space Black + Radiant Amber/Gold + Cosmic Purple
+ * Fonts:  Inter (prose) + JetBrains Mono (UI metadata)
+ * ============================================================ */
+
+:root {
+  /* Backgrounds */
+  --color-void: #050508;
+  --color-surface: #0f1117;
+  --color-surface-hover: #161b22;
+  --color-surface-active: #1c2129;
+
+  /* Borders */
+  --color-border: rgba(255, 255, 255, 0.08);
+  --color-border-hover: rgba(255, 255, 255, 0.15);
+
+  /* Accent — Radiant Amber/Gold */
+  --color-accent: #f59e0b;
+  --color-accent-hover: #d97706;
+  --color-accent-muted: rgba(245, 158, 11, 0.15);
+  --color-accent-glow: rgba(245, 158, 11, 0.25);
+
+  /* Secondary — Cosmic Purple */
+  --color-cosmic: #7c3aed;
+  --color-cosmic-muted: rgba(124, 58, 237, 0.15);
+
+  /* Status */
+  --color-success: #10b981;
+  --color-danger: #ef4444;
+  --color-warning: #f59e0b;
+
+  /* Text */
+  --color-text: #e2e8f0;
+  --color-text-muted: #94a3b8;
+  --color-text-faint: #64748b;
+
+  /* Glassmorphism */
+  --glass-bg: rgba(15, 17, 23, 0.8);
+  --glass-border: rgba(255, 255, 255, 0.06);
+}
+
+@theme inline {
+  --color-void: var(--color-void);
+  --color-surface: var(--color-surface);
+  --color-surface-hover: var(--color-surface-hover);
+  --color-accent: var(--color-accent);
+  --color-accent-hover: var(--color-accent-hover);
+  --color-cosmic: var(--color-cosmic);
+  --color-text: var(--color-text);
+  --color-text-muted: var(--color-text-muted);
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-jetbrains-mono);
+}
+
+/* ============================================================
+ * Base Styles
+ * ============================================================ */
+
+body {
+  background-color: var(--color-void);
+  color: var(--color-text);
+  font-family: var(--font-sans, "Inter", system-ui, sans-serif);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ============================================================
+ * Glass Panel
+ * ============================================================ */
+
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  border-radius: 1rem;
+}
+
+/* ============================================================
+ * Glow Effects
+ * ============================================================ */
+
+.glow-amber {
+  box-shadow: 0 0 20px var(--color-accent-glow),
+    0 0 60px rgba(245, 158, 11, 0.08);
+}
+
+.glow-border {
+  border-color: rgba(245, 158, 11, 0.3);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.glow-border:hover {
+  border-color: rgba(245, 158, 11, 0.5);
+  box-shadow: 0 0 15px rgba(245, 158, 11, 0.1);
+}
+
+/* ============================================================
+ * Scrollbar
+ * ============================================================ */
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-void);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-surface-hover);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-faint);
+}
+
+/* ============================================================
+ * Selection
+ * ============================================================ */
+
+::selection {
+  background-color: var(--color-accent-muted);
+  color: var(--color-accent);
+}
+
+/* ============================================================
+ * Focus Ring
+ * ============================================================ */
+
+*:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* ============================================================
+ * Search Input — Hide native clear button (we use our own)
+ * ============================================================ */
+
+input[type="search"]::-webkit-search-cancel-button,
+input[type="search"]::-webkit-search-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* ============================================================
+ * Code Highlighting (rehype-highlight)
+ * ============================================================ */
+
+pre code.hljs {
+  background: var(--color-surface) !important;
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  font-size: 0.875rem;
+  line-height: 1.7;
+}
+
+/* ============================================================
+ * Prose — Markdown Rendering (MarkdownRenderer)
+ * ============================================================ */
+
+.prose-replicant {
+  color: var(--color-text);
+  font-size: 1rem;
+  line-height: 1.8;
+}
+
+.prose-replicant h1,
+.prose-replicant h2,
+.prose-replicant h3,
+.prose-replicant h4 {
+  color: var(--color-text);
+  font-weight: 700;
+  margin-top: 2em;
+  margin-bottom: 0.75em;
+  line-height: 1.3;
+}
+
+.prose-replicant h1 {
+  font-size: 1.875rem;
+}
+
+.prose-replicant h2 {
+  font-size: 1.5rem;
+}
+
+.prose-replicant h3 {
+  font-size: 1.25rem;
+}
+
+.prose-replicant h4 {
+  font-size: 1.125rem;
+}
+
+.prose-replicant p {
+  margin-bottom: 1.25em;
+}
+
+.prose-replicant a {
+  color: var(--color-accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 0.2s;
+}
+
+.prose-replicant a:hover {
+  color: var(--color-accent-hover);
+}
+
+.prose-replicant ul,
+.prose-replicant ol {
+  margin-bottom: 1.25em;
+  padding-left: 1.5em;
+}
+
+.prose-replicant li {
+  margin-bottom: 0.5em;
+}
+
+.prose-replicant ul li {
+  list-style-type: disc;
+}
+
+.prose-replicant ol li {
+  list-style-type: decimal;
+}
+
+.prose-replicant blockquote {
+  border-left: 3px solid var(--color-accent);
+  margin: 1.5em 0;
+  padding: 0.75em 1.25em;
+  background: var(--color-accent-muted);
+  border-radius: 0 0.5rem 0.5rem 0;
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+.prose-replicant code:not(pre code) {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 0.25rem;
+  padding: 0.15em 0.4em;
+  font-size: 0.875em;
+  font-family: var(--font-mono);
+}
+
+.prose-replicant pre {
+  margin: 1.5em 0;
+  overflow-x: auto;
+}
+
+.prose-replicant img {
+  max-width: 100%;
+  border-radius: 0.75rem;
+  margin: 1.5em 0;
+}
+
+.prose-replicant hr {
+  border: none;
+  border-top: 1px solid var(--color-border);
+  margin: 2em 0;
+}
+
+.prose-replicant table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5em 0;
+  font-size: 0.875rem;
+}
+
+.prose-replicant th {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  padding: 0.5em 0.75em;
+  text-align: left;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted);
+}
+
+.prose-replicant td {
+  border: 1px solid var(--color-border);
+  padding: 0.5em 0.75em;
+}
+
+.prose-replicant strong {
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.prose-replicant em {
+  color: var(--color-text-muted);
+}
+
+/* ============================================================
+ * Animations
+ * ============================================================ */
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(1rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============================================================
+ * Accessibility — Reduced Motion
+ * Respects the OS "reduce motion" preference by disabling
+ * all CSS transitions and animations.
+ * ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
