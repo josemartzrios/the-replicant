@@ -30,3 +30,6 @@ dist/
 
 # Narrative Lore (Secret - Do not push)
 docs/narrative-architecture.md
+
+# Worktrees
+.worktrees/
