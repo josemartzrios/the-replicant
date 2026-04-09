@@ -59,7 +59,7 @@ class ApiClient {
                 type: "about:blank",
                 title: "Network Error",
                 status: response.status,
-                detail: "An unexpected error occurred",
+                detail: `An unexpected error occurred [status: ${response.status}]`,
             }));
 
             // On 401, clear token and redirect to login
