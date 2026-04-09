@@ -46,12 +46,16 @@ public class AuthController {
      * Both tokens are nulled in the response body.
      */
     private void setAuthCookies(HttpServletResponse response, AuthResponse authData) {
+        // SameSite=None requires Secure=true (enforced by all modern browsers, strictly by mobile Safari).
+        // In dev (cookieSecure=false, HTTP), fall back to SameSite=Lax so cookies still work locally.
+        String sameSite = cookieSecure ? "None" : "Lax";
+
         ResponseCookie accessCookie = ResponseCookie.from("accessToken", authData.getAccessToken())
                 .httpOnly(true)
                 .secure(cookieSecure)
                 .path("/")
                 .maxAge(authData.getExpiresIn() > 0 ? authData.getExpiresIn() : ACCESS_TOKEN_MAX_AGE)
-                .sameSite("None")
+                .sameSite(sameSite)
                 .build();
         response.addHeader(HttpHeaders.SET_COOKIE, accessCookie.toString());
 
@@ -61,7 +65,7 @@ public class AuthController {
                     .secure(cookieSecure)
                     .path("/api/v1/auth")
                     .maxAge(REFRESH_TOKEN_MAX_AGE)
-                    .sameSite("None")
+                    .sameSite(sameSite)
                     .build();
             response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
         }
@@ -137,10 +141,11 @@ public class AuthController {
             HttpServletResponse httpServletResponse) {
         authService.logout(user);
 
+        String sameSite = cookieSecure ? "None" : "Lax";
         ResponseCookie clearAccess = ResponseCookie.from("accessToken", "")
-                .httpOnly(true).secure(cookieSecure).path("/").maxAge(0).sameSite("None").build();
+                .httpOnly(true).secure(cookieSecure).path("/").maxAge(0).sameSite(sameSite).build();
         ResponseCookie clearRefresh = ResponseCookie.from("refreshToken", "")
-                .httpOnly(true).secure(cookieSecure).path("/api/v1/auth").maxAge(0).sameSite("None").build();
+                .httpOnly(true).secure(cookieSecure).path("/api/v1/auth").maxAge(0).sameSite(sameSite).build();
 
         httpServletResponse.addHeader(HttpHeaders.SET_COOKIE, clearAccess.toString());
         httpServletResponse.addHeader(HttpHeaders.SET_COOKIE, clearRefresh.toString());
