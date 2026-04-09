@@ -39,10 +39,14 @@ function saveAuthData(response: AuthResponse): void {
     // Only the non-sensitive user profile is stored in localStorage.
     // Tokens are managed exclusively by the backend via httpOnly cookies.
     localStorage.setItem("user", JSON.stringify(response.user));
+    // Set a routing hint cookie on the Vercel domain so the Next.js middleware
+    // can gate /admin/* routes server-side. This cookie holds no sensitive data.
+    document.cookie = "session=1; path=/; SameSite=Lax; Secure; Max-Age=86400";
 }
 
 function clearAuthData(): void {
     localStorage.removeItem("user");
+    document.cookie = "session=; path=/; SameSite=Lax; Secure; Max-Age=0";
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
